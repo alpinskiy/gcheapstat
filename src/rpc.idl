@@ -1,0 +1,22 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+typedef struct tagMtStat {
+  UINT_PTR addr;
+  SIZE_T count;
+  SIZE_T size_total;
+} MtStat;
+
+[uuid(5929c69e-e821-4fe6-ba90-9bac000a3e9e)]
+interface Client {
+  DWORD ExchangePid(DWORD pid);
+  void LogError([in] BSTR message);
+}
+
+[uuid(66470eda-251f-4532-9a19-b225bb8c4874)]
+interface Server {
+  HRESULT CalculateMtStat([in] DWORD pid, [out] PSIZE_T size);
+  boolean GetMtStat([in] SIZE_T offset, [in] UINT size, [out,size_is(size)] MtStat list[*]);
+  HRESULT GetMtName([in] UINT_PTR addr, [out, retval] LPBSTR name);
+  void Cancel();
+}
