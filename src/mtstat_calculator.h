@@ -41,15 +41,6 @@ class MtStatCalculator {
   HRESULT WalkEphemeralHeapSegment(Segment& segment);
   HRESULT WalkLargeObjectHeapSegment(Segment& segment);
 
-  inline bool ReadMethodTableAddress(PBYTE& buffer_ptr,
-                                     size_t& buffer_bytes_left, uintptr_t& mt) {
-    mt = *reinterpret_cast<uintptr_t*>(buffer_ptr) & ~3;
-    if (mt == 0) return false;
-    buffer_ptr += sizeof(uintptr_t);
-    buffer_bytes_left -= sizeof(uintptr_t);
-    return true;
-  }
-
   template <size_t Alignment>
   inline uintptr_t Align(uintptr_t v) {
     auto constexpr kAlign = Alignment - 1;
@@ -85,55 +76,37 @@ class MtStatCalculator {
     return false;
   }
 
-  template <size_t Alignment>
-  inline HRESULT ProcessObject(uintptr_t mt, PBYTE& buffer_ptr,
-                               size_t& buffer_bytes_left, PCWSTR tag) {
-    // Get method table info
+  inline HRESULT GetMtAddrStat(uintptr_t mt, MtAddrStat** ptr) {
     auto it = dict_.find(mt);
-    if (it == dict_.end()) {
+    if (it != dict_.end()) {
+      *ptr = &it->second;
+    } else {
       DacpMethodTableData mt_data{};
       auto hr = mt_data.Request(sos_dac_interface_.get(), mt);
-      if (FAILED(hr)) {
-        LogError(L"Error getting method table data, code 0x%08lx\n", hr);
-        return hr;
-      }
+      if (FAILED(hr)) return hr;
       MtAddrStat stat{mt_data.BaseSize, mt_data.ComponentSize};
-      it = dict_.emplace(mt, stat).first;
+      *ptr = &dict_.emplace(mt, stat).first->second;
     }
+    return S_OK;
+  }
+
+  inline size_t UpdateMtAddrStat(uintptr_t mt, DWORD component_count,
+                                 MtAddrStat* stat) {
     // Calculate object size
-    auto& stat = it->second;
-    auto object_size = stat.sizeof_base;
-    if (stat.sizeof_component) {
-      auto component_count = *reinterpret_cast<PDWORD>(buffer_ptr);
-      if (mt == useful_globals_.StringMethodTable) {
-        // The component size on a String does not contain the trailing NULL
-        // character, so we must add that ourselves.
-        ++component_count;
-      }
-      object_size += component_count * stat.sizeof_component;
+    if (mt == useful_globals_.StringMethodTable) {
+      // The component size on a String does not contain the trailing NULL
+      // character, so we must add that ourselves.
+      ++component_count;
     }
+    auto object_size =
+        stat->sizeof_base + component_count * stat->sizeof_component;
 #if _WIN64
     if (object_size < kMinObjectSize) object_size = kMinObjectSize;
 #endif
     // Update statistics
-    ++stat.count;
-    stat.size_total += object_size;
-    // Move to the next object
-    auto object_size_aligned =
-        Align<Alignment>(object_size) -
-        sizeof(uintptr_t);  // object size includes method table address
-    if (buffer_bytes_left < object_size_aligned ||
-        object_size_aligned <= sizeof(uintptr_t)) {
-      LogError(
-          L"Object size is out of valid range (size %zu, size aligned %zu, %zu "
-          L"bytes left, %s)\n",
-          object_size, object_size_aligned + sizeof(uintptr_t),
-          buffer_bytes_left + sizeof(uintptr_t), tag);
-      return E_FAIL;
-    }
-    buffer_ptr += object_size_aligned;
-    buffer_bytes_left -= object_size_aligned;
-    return S_OK;
+    ++stat->count;
+    stat->size_total += object_size;
+    return object_size;
   }
 
   HANDLE hprocess_;

@@ -130,26 +130,41 @@ HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
   return S_OK;
 }
 
+// clang-format off
+// Three functions below are largerly the same but separated
+// because this way it is easier to write custom error messages
+// for each kind of segment (small, large and ephemeral).
+// Automatic formatting is turned off to keep line structure the same,
+// so you can copy and past any of two to the comparer and see
+// they differ pretty much in trace messages only
+// + WalkEphemeralHeapSegment needs to check also allocation context.
+
 HRESULT MtStatCalculator::WalkSmallObjectHeapSegment(Segment& segment) {
   auto segment_first = static_cast<uintptr_t>(segment.data.mem);
   auto segment_last = static_cast<uintptr_t>(segment.data.allocated);
   if (segment_last < segment_first) {
-    LogError(L"Invalid segment range encountered\n");
+    LogError(L"Invalid segment range encountered, small object heap\n");
     return E_FAIL;
   }
   auto segment_size = static_cast<size_t>(segment_last - segment_first);
   if (!segment_size) {
-    LogError(L"Empty segment encountered\n");
+    LogError(L"Empty segment encountered, small object heap\n");
     return S_FALSE;
   }
   std::vector<BYTE> buffer(segment_size);
   SIZE_T read = 0;
   if (!ReadProcessMemory(hprocess_, reinterpret_cast<LPCVOID>(segment_first),
-                         &buffer[0], segment_size, &read))
-    return HRESULT_FROM_WIN32(GetLastError()); // todo
+                         &buffer[0], segment_size, &read)) {
+    auto hr = HRESULT_FROM_WIN32(GetLastError());
+    LogError(
+        L"Error reading segment memory, code 0x%08lx, small object heap\n",
+        segment_size, read);
+    return hr;
+  }
   if (read != segment_size) {
-    LogError(L"Error reading segment memory (requested %zu, read %zu bytes)\n",
-             segment_size, read);
+    LogError(
+        L"Incomplete segment memory read, bytes requested %zu, read %zu, small object heap\n",
+        segment_size, read);
     return E_FAIL;
   }
   auto buffer_first = &buffer[0];
@@ -157,41 +172,71 @@ HRESULT MtStatCalculator::WalkSmallObjectHeapSegment(Segment& segment) {
   auto buffer_bytes_left = segment_size;
   for (; kMinObjectSize <= buffer_bytes_left;) {
     if (IsCancelled()) return S_FALSE;
-    uintptr_t mt;
-    if (!ReadMethodTableAddress(buffer_ptr, buffer_bytes_left, mt)) {
+    auto mt = *reinterpret_cast<uintptr_t*>(buffer_ptr) & ~3;
+    if (!mt) {
       LogError(
-          L"Zero method table address encountered (small object heap, %zu "
-          L"bytes left)\n",
+          L"Zero method table address encountered, %zu bytes left, small object heap\n",
           buffer_bytes_left);
       return E_FAIL;
     }
-    auto hr = ProcessObject<kAlignment>(mt, buffer_ptr, buffer_bytes_left,
-                                        L"small object heap");
-    if (FAILED(hr)) return hr;
+    MtAddrStat* stat;
+    auto hr = GetMtAddrStat(mt, &stat);
+    if (FAILED(hr)) {
+      LogError(
+          L"Error getting method table data, code 0x%08lx, small object heap\n",
+          hr);
+      return hr;
+    }
+    auto component_count =
+        *reinterpret_cast<PDWORD>(buffer_ptr + sizeof(uintptr_t));
+    auto object_size = UpdateMtAddrStat(mt, component_count, stat);
+    auto object_size_aligned = Align<kAlignment>(object_size);
+    if (buffer_bytes_left < object_size_aligned ||
+        object_size_aligned <= sizeof(uintptr_t)) {
+      LogError(
+          L"Object size %zu is out of valid range, size aligned %zu, %zu bytes left, small object heap\n",
+          object_size, object_size_aligned + sizeof(uintptr_t),
+          buffer_bytes_left + sizeof(uintptr_t));
+      return E_FAIL;
+    }
+    buffer_ptr += object_size_aligned;
+    buffer_bytes_left -= object_size_aligned;
   }
-  return buffer_bytes_left ? E_FAIL : S_OK;
+  if (buffer_bytes_left) {
+    LogError(
+      L"Objects total size isn't equal to segment size %zu, %zu bytes left",
+      segment_size, buffer_bytes_left);
+    return E_FAIL;
+  }
+  return S_OK;
 }
 
 HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
   auto segment_first = static_cast<uintptr_t>(segment.data.mem);
   auto segment_last = static_cast<uintptr_t>(segment.heap->alloc_allocated);
   if (segment_last < segment_first) {
-    LogError(L"Invalid segment range encountered\n");
+    LogError(L"Invalid segment range encountered, ephemeral segment\n");
     return E_FAIL;
   }
   auto segment_size = static_cast<size_t>(segment_last - segment_first);
   if (!segment_size) {
-    LogError(L"Empty segment encountered\n");
+    LogError(L"Empty segment encountered, ephemeral segment\n");
     return S_FALSE;
   }
   std::vector<BYTE> buffer(segment_size);
   SIZE_T read = 0;
   if (!ReadProcessMemory(hprocess_, reinterpret_cast<LPCVOID>(segment_first),
-                         &buffer[0], segment_size, &read))
-    return HRESULT_FROM_WIN32(GetLastError()); // todo
+                         &buffer[0], segment_size, &read)) {
+    auto hr = HRESULT_FROM_WIN32(GetLastError());
+    LogError(
+        L"Error reading segment memory, code 0x%08lx, ephemeral segment\n",
+        segment_size, read);
+    return hr;
+  }
   if (read != segment_size) {
-    LogError(L"Error reading segment memory (requested %zu, read %zu bytes)\n",
-             segment_size, read);
+    LogError(
+        L"Incomplete segment memory read, bytes requested %zu, read %zu, ephemeral segment\n",
+        segment_size, read);
     return E_FAIL;
   }
   auto buffer_first = &buffer[0];
@@ -200,11 +245,11 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
   auto buffer_bytes_left = segment_size;
   for (; kMinObjectSize <= buffer_bytes_left;) {
     if (IsCancelled()) return S_FALSE;
-    auto segment_ptr = static_cast<uintptr_t>(
-        segment_first + std::distance(&buffer[0], buffer_ptr));
-    uintptr_t mt;
-    if (!ReadMethodTableAddress(buffer_ptr, buffer_bytes_left, mt)) {
+    auto mt = *reinterpret_cast<uintptr_t*>(buffer_ptr) & ~3;
+    if (!mt) {
       // Is this the beginning of an allocation context?
+      auto segment_ptr = static_cast<uintptr_t>(
+          segment_first + std::distance(&buffer[0], buffer_ptr));
       PBYTE buffer_ptr_new;
       if (SkipAllocationContext<kAlignment>(segment.heap, segment_ptr) &&
           SegmentPtrToBufferPtr(segment_ptr, segment_first, segment_last,
@@ -216,39 +261,69 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
         continue;
       } else {
         LogError(
-            L"Zero method table address encountered (ephemeral segment, %zu "
-            L"bytes left)\n",
+            L"Zero method table address encountered, %zu bytes left, ephemeral segment\n",
             buffer_bytes_left);
         return E_FAIL;
       }
     }
-    auto hr = ProcessObject<kAlignment>(mt, buffer_ptr, buffer_bytes_left,
-                                        L"ephemeral segment");
-    if (FAILED(hr)) return hr;
+    MtAddrStat* stat;
+    auto hr = GetMtAddrStat(mt, &stat);
+    if (FAILED(hr)) {
+      LogError(
+          L"Error getting method table data, code 0x%08lx, ephemeral segment\n",
+          hr);
+      return hr;
+    }
+    auto component_count =
+        *reinterpret_cast<PDWORD>(buffer_ptr + sizeof(uintptr_t));
+    auto object_size = UpdateMtAddrStat(mt, component_count, stat);
+    auto object_size_aligned = Align<kAlignment>(object_size);
+    if (buffer_bytes_left < object_size_aligned ||
+        object_size_aligned <= sizeof(uintptr_t)) {
+      LogError(
+          L"Object size %zu is out of valid range, size aligned %zu, %zu bytes left, ephemeral segment\n",
+          object_size, object_size_aligned + sizeof(uintptr_t),
+          buffer_bytes_left + sizeof(uintptr_t));
+      return E_FAIL;
+    }
+    buffer_ptr += object_size_aligned;
+    buffer_bytes_left -= object_size_aligned;
   }
-  return buffer_bytes_left ? E_FAIL : S_OK;
+  if (buffer_bytes_left) {
+    LogError(
+      L"Objects total size isn't equal to segment size %zu, %zu bytes left",
+      segment_size, buffer_bytes_left);
+    return E_FAIL;
+  }
+  return S_OK;
 }
 
 HRESULT MtStatCalculator::WalkLargeObjectHeapSegment(Segment& segment) {
   auto segment_first = static_cast<uintptr_t>(segment.data.mem);
   auto segment_last = static_cast<uintptr_t>(segment.data.allocated);
   if (segment_last < segment_first) {
-    LogError(L"Invalid segment range encountered\n");
+    LogError(L"Invalid segment range encountered, large object heap\n");
     return E_FAIL;
   }
   auto segment_size = static_cast<size_t>(segment_last - segment_first);
   if (!segment_size) {
-    LogError(L"Empty segment encountered\n");
+    LogError(L"Empty segment encountered, large object heap\n");
     return S_FALSE;
   }
   std::vector<BYTE> buffer(segment_size);
   SIZE_T read = 0;
   if (!ReadProcessMemory(hprocess_, reinterpret_cast<LPCVOID>(segment_first),
-                         &buffer[0], segment_size, &read)) // todo
-    return HRESULT_FROM_WIN32(GetLastError());
+                         &buffer[0], segment_size, &read)) {
+    auto hr = HRESULT_FROM_WIN32(GetLastError());
+    LogError(
+        L"Error reading segment memory, code 0x%08lx, large object heap\n",
+        segment_size, read);
+    return hr;
+  }
   if (read != segment_size) {
-    LogError(L"Error reading segment memory (requested %zu, read %zu bytes)\n",
-             segment_size, read);
+    LogError(
+        L"Incomplete segment memory read, bytes requested %zu, read %zu, large object heap\n",
+        segment_size, read);
     return E_FAIL;
   }
   auto buffer_first = &buffer[0];
@@ -256,20 +331,45 @@ HRESULT MtStatCalculator::WalkLargeObjectHeapSegment(Segment& segment) {
   auto buffer_bytes_left = segment_size;
   for (; kMinObjectSize <= buffer_bytes_left;) {
     if (IsCancelled()) return S_FALSE;
-    uintptr_t mt;
-    if (!ReadMethodTableAddress(buffer_ptr, buffer_bytes_left, mt)) {
+    auto mt = *reinterpret_cast<uintptr_t*>(buffer_ptr) & ~3;
+    if (!mt) {
       LogError(
-          L"Zero method table address encountered (large object heap, %zu "
-          L"bytes left)\n",
+          L"Zero method table address encountered, %zu bytes left, large object heap\n",
           buffer_bytes_left);
       return E_FAIL;
     }
-    auto hr = ProcessObject<kAlignmentLarge>(mt, buffer_ptr, buffer_bytes_left,
-                                             L"large object heap");
-    if (FAILED(hr)) return hr;
+    MtAddrStat* stat;
+    auto hr = GetMtAddrStat(mt, &stat);
+    if (FAILED(hr)) {
+      LogError(
+          L"Error getting method table data, code 0x%08lx, large object heap\n",
+          hr);
+      return hr;
+    }
+    auto component_count =
+        *reinterpret_cast<PDWORD>(buffer_ptr + sizeof(uintptr_t));
+    auto object_size = UpdateMtAddrStat(mt, component_count, stat);
+    auto object_size_aligned = Align<kAlignmentLarge>(object_size);
+    if (buffer_bytes_left < object_size_aligned ||
+        object_size_aligned <= sizeof(uintptr_t)) {
+      LogError(
+          L"Object size %zu is out of valid range, size aligned %zu, %zu bytes left, large object heap\n",
+          object_size, object_size_aligned + sizeof(uintptr_t),
+          buffer_bytes_left + sizeof(uintptr_t));
+      return E_FAIL;
+    }
+    buffer_ptr += object_size_aligned;
+    buffer_bytes_left -= object_size_aligned;
   }
-  return buffer_bytes_left ? E_FAIL : S_OK;
+  if (buffer_bytes_left) {
+    LogError(
+      L"Objects total size isn't equal to segment size %zu, %zu bytes left",
+      segment_size, buffer_bytes_left);
+    return E_FAIL;
+  }
+  return S_OK;
 }
+// clang-format on
 
 HRESULT CalculateMtStat(HANDLE hprocess, ISOSDacInterface* sos_dac_interface,
                         std::vector<MtStat>& mtstat) {
