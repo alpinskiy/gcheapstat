@@ -137,7 +137,7 @@ HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
 // Automatic formatting is turned off to keep line structure the same,
 // so you can copy and past any of two to the comparer and see
 // they differ pretty much in trace messages only
-// + WalkEphemeralHeapSegment needs to check also allocation context.
+// + WalkEphemeralHeapSegment have to check allocation context.
 
 HRESULT MtStatCalculator::WalkSmallObjectHeapSegment(Segment& segment) {
   auto segment_first = static_cast<uintptr_t>(segment.data.mem);
@@ -204,7 +204,7 @@ HRESULT MtStatCalculator::WalkSmallObjectHeapSegment(Segment& segment) {
   }
   if (buffer_bytes_left) {
     LogError(
-      L"Objects total size isn't equal to segment size %zu, %zu bytes left",
+      L"Objects total size isn't equal to segment size %zu, %zu bytes left, small object heap",
       segment_size, buffer_bytes_left);
     return E_FAIL;
   }
@@ -245,26 +245,25 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
   auto buffer_bytes_left = segment_size;
   for (; kMinObjectSize <= buffer_bytes_left;) {
     if (IsCancelled()) return S_FALSE;
+    // Is this the beginning of an allocation context?
+    auto segment_ptr = static_cast<uintptr_t>(
+        segment_first + std::distance(&buffer[0], buffer_ptr));
+    PBYTE buffer_ptr_new;
+    if (SkipAllocationContext<kAlignment>(segment.heap, segment_ptr) &&
+        SegmentPtrToBufferPtr(segment_ptr, segment_first, segment_last,
+                              buffer_first, buffer_ptr_new)) {
+      _ASSERT(buffer_ptr < buffer_ptr_new);
+      _ASSERT(buffer_ptr_new <= buffer_last);
+      buffer_ptr = buffer_ptr_new;
+      buffer_bytes_left = std::distance(buffer_ptr, buffer_last);
+      continue;
+    }
     auto mt = *reinterpret_cast<uintptr_t*>(buffer_ptr) & ~3;
     if (!mt) {
-      // Is this the beginning of an allocation context?
-      auto segment_ptr = static_cast<uintptr_t>(
-          segment_first + std::distance(&buffer[0], buffer_ptr));
-      PBYTE buffer_ptr_new;
-      if (SkipAllocationContext<kAlignment>(segment.heap, segment_ptr) &&
-          SegmentPtrToBufferPtr(segment_ptr, segment_first, segment_last,
-                                buffer_first, buffer_ptr_new)) {
-        _ASSERT(buffer_ptr < buffer_ptr_new);
-        _ASSERT(buffer_ptr_new <= buffer_last);
-        buffer_ptr = buffer_ptr_new;
-        buffer_bytes_left = std::distance(buffer_ptr, buffer_last);
-        continue;
-      } else {
-        LogError(
-            L"Zero method table address encountered, %zu bytes left, ephemeral segment\n",
-            buffer_bytes_left);
-        return E_FAIL;
-      }
+      LogError(
+          L"Zero method table address encountered, %zu bytes left, ephemeral segment\n",
+          buffer_bytes_left);
+      return E_FAIL;
     }
     MtAddrStat* stat;
     auto hr = GetMtAddrStat(mt, &stat);
@@ -291,7 +290,7 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
   }
   if (buffer_bytes_left) {
     LogError(
-      L"Objects total size isn't equal to segment size %zu, %zu bytes left",
+      L"Objects total size isn't equal to segment size %zu, %zu bytes left, ephemeral segment",
       segment_size, buffer_bytes_left);
     return E_FAIL;
   }
@@ -363,7 +362,7 @@ HRESULT MtStatCalculator::WalkLargeObjectHeapSegment(Segment& segment) {
   }
   if (buffer_bytes_left) {
     LogError(
-      L"Objects total size isn't equal to segment size %zu, %zu bytes left",
+      L"Objects total size isn't equal to segment size %zu, %zu bytes left, large object heap",
       segment_size, buffer_bytes_left);
     return E_FAIL;
   }
