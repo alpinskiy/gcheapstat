@@ -4,7 +4,7 @@
 
 template <class T, template <class> class C>
 struct MtStatComparer {
-  MtStatComparer(OrderBy orderby)
+  explicit MtStatComparer(OrderBy orderby)
       : ptr{orderby == OrderBy::Count ? &MtStat::count : &MtStat::size_total} {
     _ASSERT(orderby == OrderBy::Count || orderby == OrderBy::TotalSize);
   }
