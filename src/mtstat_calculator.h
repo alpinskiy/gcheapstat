@@ -37,12 +37,14 @@ class MtStatCalculator {
     size_t size_total;
   };
 
+#ifndef _WIN64
   template <size_t Alignment>
   inline void WalkSegment(CLRDATA_ADDRESS mem, CLRDATA_ADDRESS allocated,
                           PCWSTR name) {
     WalkSegment<Alignment>(static_cast<uintptr_t>(mem),
                            static_cast<uintptr_t>(allocated), name);
   }
+#endif
 
   template <size_t Alignment>
   void WalkSegment(uintptr_t mem, uintptr_t allocated, PCWSTR name) {
