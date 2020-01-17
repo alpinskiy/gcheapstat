@@ -75,6 +75,12 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
   // Segments
   for (size_t i = 0; i < heaps_.size(); ++i) {
     auto heap = &heaps_[i];
+    if (heap->generation_table[0].allocContextPtr) {
+      allocation_contexts_.push_back(
+          {static_cast<uintptr_t>(heap->generation_table[0].allocContextPtr),
+           static_cast<uintptr_t>(
+               heap->generation_table[0].allocContextLimit)});
+    }
     // Small & ephemeral
     auto addr = heap->generation_table[info_.g_max_generation].start_segment;
     for (; addr;) {
@@ -99,6 +105,10 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       segments_[1].push_back(segment);
       addr = segment.data.next;
     }
+  }
+  if (SUCCEEDED(hr)) {
+    std::sort(allocation_contexts_.begin(), allocation_contexts_.end(),
+              [](auto& a, auto& b) { return a.ptr < b.ptr; });
   }
   return hr;
 }
@@ -229,8 +239,8 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
                          &buffer[0], segment_size, &read)) {
     auto hr = HRESULT_FROM_WIN32(GetLastError());
     LogError(
-        L"Error reading segment memory, code 0x%08lx, ephemeral segment\n",
-        segment_size, read);
+      L"Error reading segment memory, code 0x%08lx, ephemeral segment\n",
+      segment_size, read);
     return hr;
   }
   if (read != segment_size) {
@@ -239,6 +249,10 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
         segment_size, read);
     return E_FAIL;
   }
+  auto segment_ptr = segment_first;
+  auto allocation_context =
+      std::find_if(allocation_contexts_.cbegin(), allocation_contexts_.cend(),
+                   [segment_ptr](auto& a) { return segment_ptr < a.ptr; });
   auto buffer_first = &buffer[0];
   auto buffer_last = buffer_first + segment_size;
   auto buffer_ptr = buffer_first;
@@ -246,16 +260,16 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
   for (; kMinObjectSize <= buffer_bytes_left;) {
     if (IsCancelled()) return S_FALSE;
     // Is this the beginning of an allocation context?
-    auto segment_ptr = static_cast<uintptr_t>(
-        segment_first + std::distance(&buffer[0], buffer_ptr));
-    PBYTE buffer_ptr_new;
-    if (SkipAllocationContext<kAlignment>(segment.heap, segment_ptr) &&
-        SegmentPtrToBufferPtr(segment_ptr, segment_first, segment_last,
-                              buffer_first, buffer_ptr_new)) {
-      _ASSERT(buffer_ptr < buffer_ptr_new);
-      _ASSERT(buffer_ptr_new <= buffer_last);
-      buffer_ptr = buffer_ptr_new;
-      buffer_bytes_left = std::distance(buffer_ptr, buffer_last);
+    if (allocation_context != allocation_contexts_.cend() && segment_ptr == allocation_context->ptr) {
+      segment_ptr = allocation_context->limit + Align<kAlignment>(kMinObjectSize);
+      if (segment_last < segment_ptr) {
+        LogError(L"Allocation context limit is out of ephemeral segment end\n");
+        return E_FAIL;
+      }
+      auto offset = segment_ptr - segment_first;
+      buffer_ptr = buffer_first + offset;
+      buffer_bytes_left = buffer_last - buffer_ptr;
+      ++allocation_context;
       continue;
     }
     auto mt = *reinterpret_cast<uintptr_t*>(buffer_ptr) & ~3;
@@ -287,11 +301,12 @@ HRESULT MtStatCalculator::WalkEphemeralHeapSegment(Segment& segment) {
     }
     buffer_ptr += object_size_aligned;
     buffer_bytes_left -= object_size_aligned;
+    segment_ptr += object_size_aligned;
   }
   if (buffer_bytes_left) {
     LogError(
-      L"Objects total size isn't equal to segment size %zu, %zu bytes left, ephemeral segment",
-      segment_size, buffer_bytes_left);
+        L"Objects total size isn't equal to segment size %zu, %zu bytes left, ephemeral segment",
+        segment_size, buffer_bytes_left);
     return E_FAIL;
   }
   return S_OK;

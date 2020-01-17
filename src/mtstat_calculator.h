@@ -47,35 +47,6 @@ class MtStatCalculator {
     return (v + kAlign) & ~kAlign;
   }
 
-  template <size_t Alignment>
-  inline bool SkipAllocationContext(DacpGcHeapDetails* heap,
-                                    uintptr_t& segment_ptr) {
-    for (auto& c : allocation_contexts_)
-      if (segment_ptr == c.ptr) {
-        segment_ptr = c.limit + Align<Alignment>(kMinObjectSize);
-        return true;
-      }
-    if (segment_ptr == heap->generation_table[0].allocContextPtr) {
-      segment_ptr =
-          static_cast<uintptr_t>(heap->generation_table[0].allocContextLimit) +
-          Align<Alignment>(kMinObjectSize);
-      return true;
-    }
-    return false;
-  }
-
-  inline bool SegmentPtrToBufferPtr(uintptr_t segment_ptr,
-                                    uintptr_t segment_first,
-                                    uintptr_t segment_last, PBYTE buffer_first,
-                                    PBYTE& buffer_ptr) {
-    if (segment_first <= segment_ptr && segment_ptr <= segment_last) {
-      auto offset = segment_ptr - segment_first;
-      buffer_ptr = buffer_first + offset;
-      return true;
-    }
-    return false;
-  }
-
   inline HRESULT GetMtAddrStat(uintptr_t mt, MtAddrStat** ptr) {
     auto it = dict_.find(mt);
     if (it != dict_.end()) {
