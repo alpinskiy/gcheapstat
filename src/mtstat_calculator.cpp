@@ -11,8 +11,10 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
   hprocess_ = hprocess;
   sos_dac_interface_ = sos_dac_interface;
   auto hr = info_.Request(sos_dac_interface_.get());
+  if (FAILED(hr)) LogError(L"Error getting GCHeapData, code 0x%08lx\n", hr);
   hr = sos_dac_interface_->GetUsefulGlobals(&useful_globals_);
-  // Heaps
+  if (FAILED(hr)) LogError(L"Error getting UsefulGlobals, code 0x%08lx\n", hr);
+  // Get heaps
   if (info_.bServerMode) {
     std::vector<CLRDATA_ADDRESS> heap_addr_list(info_.HeapCount);
     unsigned int needed = 0;
@@ -46,7 +48,7 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
     } else
       heaps_.push_back(heap);
   }
-  // Segments & gen0 allocation contexts
+  // Get segments & gen0 allocation contexts
   for (size_t i = 0; i < heaps_.size(); ++i) {
     auto heap = &heaps_[i];
     if (heap->generation_table[0].allocContextPtr) {
@@ -80,7 +82,7 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       addr = segment.data.next;
     }
   }
-  //  Thread allocation contexts
+  //  Get thread allocation contexts
   DacpThreadStoreData threadstore_data{};
   hr = threadstore_data.Request(sos_dac_interface_.get());
   if (SUCCEEDED(hr)) {
@@ -105,18 +107,16 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       }
     }
   }
+  // Verify allocation contexts
   for (auto it = allocation_contexts_.begin();
        it != allocation_contexts_.end();) {
-    if (it->ptr < it->limit) {
-      ++it;
-      continue;
-    }
-    if (it->ptr == it->limit)
-      LogError(L"Empty allocation context encountered\n");
-    else
+    if (it->limit < it->ptr) {
       LogError(L"Invalid allocation context encountered\n");
-    it = allocation_contexts_.erase(it);
+      it = allocation_contexts_.erase(it);
+    } else
+      ++it;
   }
+  // Sort allocation contexts
   std::sort(allocation_contexts_.begin(), allocation_contexts_.end(),
             [](auto& a, auto& b) { return a.ptr < b.ptr; });
   return hr;
