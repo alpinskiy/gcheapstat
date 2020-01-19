@@ -21,7 +21,7 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
     hr = sos_dac_interface_->GetGCHeapList(info_.HeapCount, &heap_addr_list[0],
                                            &needed);
     if (FAILED(hr)) {
-      LogError(L"Error getting GCHeapList\n");
+      LogError(L"Error getting GCHeapList, code 0x%08lx\n", hr);
       return hr;
     }
     HRESULT lasterror = S_OK;
