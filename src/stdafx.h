@@ -1,6 +1,6 @@
 #pragma once
 #include <winsdkver.h>
-//---
+//
 #include <comdef.h>
 #include <corhdr.h>
 #include <pathcch.h>

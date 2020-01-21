@@ -127,29 +127,52 @@ HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
   for (auto& segment : segments_[0]) {
     if (segment.addr == segment.heap->ephemeral_heap_segment)
       WalkSegment<kAlignment>(segment.data.mem, segment.heap->alloc_allocated,
-                              L"ephemeral");
+                              L"ephemeral", segment.heap,
+                              GetGeneration(segment.data.mem, segment.heap));
     else
       WalkSegment<kAlignment>(segment.data.mem, segment.data.allocated,
-                              L"small object");
+                              L"small object", segment.heap,
+                              GetGeneration(segment.data.mem, segment.heap));
     if (IsCancelled()) return S_FALSE;
   }
   for (auto& segment : segments_[1]) {
     WalkSegment<kAlignmentLarge>(segment.data.mem, segment.data.allocated,
-                                 L"large object");
+                                 L"large object", segment.heap,
+                                 DAC_NUMBERGENERATIONS - 1);
     if (IsCancelled()) return S_FALSE;
   }
   std::vector<MtStat> ret;
   ret.reserve(dict_.size());
   std::transform(dict_.cbegin(), dict_.cend(), std::back_inserter(ret),
                  [](auto& p) {
-                   MtStat item;
-                   item.addr = p.first;
-                   item.count = p.second.count;
-                   item.size_total = p.second.size_total;
+                   MtStat item{p.first};
+                   for (size_t i = 0; i < p.second.gen.size(); ++i) {
+                     item.count += p.second.gen[i].count;
+                     item.size_total += p.second.gen[i].size_total;
+                     item.gen[i] = p.second.gen[i];
+                   }
                    return item;
                  });
   std::swap(ret, mtstat);
   return S_OK;
+}
+
+size_t MtStatCalculator::GetGeneration(CLRDATA_ADDRESS addr,
+                                       DacpGcHeapDetails* heap) {
+  size_t gen = 0;
+  for (; gen < DAC_NUMBERGENERATIONS &&
+         addr < heap->generation_table[gen].allocation_start;
+       ++gen)
+    ;
+  if (gen == DAC_NUMBERGENERATIONS) {
+    gen = 0;
+    LogError(
+        L"Segment start address is out of valid range, generational data "
+        L"will be messed up!\n");
+  } else {
+    // OK
+  }
+  return gen;
 }
 
 HRESULT CalculateMtStat(HANDLE hprocess, ISOSDacInterface* sos_dac_interface,
