@@ -146,7 +146,7 @@ HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
   std::transform(dict_.cbegin(), dict_.cend(), std::back_inserter(ret),
                  [](auto& p) {
                    MtStat item{p.first};
-                   for (size_t i = 0; i < p.second.gen.size(); ++i) {
+                   for (auto i = 0; i < DAC_NUMBERGENERATIONS; ++i) {
                      item.count += p.second.gen[i].count;
                      item.size_total += p.second.gen[i].size_total;
                      item.gen[i] = p.second.gen[i];
