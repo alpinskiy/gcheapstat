@@ -160,11 +160,11 @@ HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
 size_t MtStatCalculator::GetGeneration(CLRDATA_ADDRESS addr,
                                        DacpGcHeapDetails* heap) {
   size_t gen = 0;
-  for (; gen < DAC_NUMBERGENERATIONS &&
+  for (; gen < DAC_NUMBERGENERATIONS - 1 &&
          addr < heap->generation_table[gen].allocation_start;
        ++gen)
     ;
-  if (gen == DAC_NUMBERGENERATIONS) {
+  if (gen == DAC_NUMBERGENERATIONS - 1) {
     gen = 0;
     LogError(
         L"Segment start address is out of valid range, generational data "
