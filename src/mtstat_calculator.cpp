@@ -82,7 +82,7 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       addr = segment.data.next;
     }
   }
-  //  Get thread allocation contexts
+  // Get thread allocation contexts
   DacpThreadStoreData threadstore_data{};
   hr = threadstore_data.Request(sos_dac_interface_.get());
   if (SUCCEEDED(hr)) {
