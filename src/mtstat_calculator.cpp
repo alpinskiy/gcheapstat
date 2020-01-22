@@ -143,16 +143,15 @@ HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
   }
   std::vector<MtStat> ret;
   ret.reserve(dict_.size());
-  std::transform(dict_.cbegin(), dict_.cend(), std::back_inserter(ret),
-                 [](auto& p) {
-                   MtStat item{p.first};
-                   for (auto i = 0; i < DAC_NUMBERGENERATIONS; ++i) {
-                     item.count += p.second.gen[i].count;
-                     item.size_total += p.second.gen[i].size_total;
-                     item.gen[i] = p.second.gen[i];
-                   }
-                   return item;
-                 });
+  std::transform(
+      dict_.cbegin(), dict_.cend(), std::back_inserter(ret), [](auto& p) {
+        auto& gen = p.second.gen;
+        auto count = gen[0].count + gen[1].count + gen[2].count + gen[3].count;
+        auto size_total = gen[0].size_total + gen[1].size_total +
+                          gen[2].size_total + gen[3].size_total;
+        return MtStat{p.first, {count, size_total}, gen[0], gen[1], gen[2],
+                      gen[3]};
+      });
   std::swap(ret, mtstat);
   return S_OK;
 }

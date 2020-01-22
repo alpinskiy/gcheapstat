@@ -2,28 +2,54 @@
 #include "logger.h"
 #include "options.h"
 
+Stat MtStat::*GetStatPtr(int gen) {
+  _ASSERT(-1 <= gen && gen <= 3);
+  switch (gen) {
+    case 0:
+      return &MtStat::gen0;
+    case 1:
+      return &MtStat::gen1;
+      break;
+    case 2:
+      return &MtStat::gen2;
+      break;
+    case 3:
+      return &MtStat::gen3;
+      break;
+    default:
+      return &MtStat::stat;
+  }
+}
+
 template <class T, template <class> class C>
 struct MtStatComparer {
-  explicit MtStatComparer(OrderBy orderby)
-      : ptr{orderby == OrderBy::Count ? &MtStat::count : &MtStat::size_total} {
+  explicit MtStatComparer(OrderBy orderby, int gen)
+      : ptr{GetStatPtr(gen)},
+        ptr2{orderby == OrderBy::Count ? &Stat::count : &Stat::size_total} {
     _ASSERT(orderby == OrderBy::Count || orderby == OrderBy::TotalSize);
   }
-  bool operator()(MtStat &a, MtStat &b) { return cmp(a.*ptr, b.*ptr); }
-  T MtStat::*ptr;
+  bool operator()(MtStat &a, MtStat &b) {
+    return cmp(a.*ptr.*ptr2, b.*ptr.*ptr2);
+  }
+  Stat MtStat::*ptr;
+  T Stat::*ptr2;
   C<T> cmp;
 };
 
 template <typename T>
-void Sort(T first, T last, Order order, OrderBy orderby) {
-  _ASSERT(order == Order::Asc || order == Order::Desc);
-  if (order == Order::Asc)
-    std::sort(first, last, MtStatComparer<SIZE_T, std::less>{orderby});
+void Sort(T first, T last, Options &opt) {
+  _ASSERT(opt.order == Order::Asc || opt.order == Order::Desc);
+  if (opt.order == Order::Asc)
+    std::sort(first, last,
+              MtStatComparer<SIZE_T, std::less>{opt.orderby, opt.orderby_gen});
   else
-    std::sort(first, last, MtStatComparer<SIZE_T, std::greater>{orderby});
+    std::sort(
+        first, last,
+        MtStatComparer<SIZE_T, std::greater>{opt.orderby, opt.orderby_gen});
 }
 
 template <typename T>
-void PrintWinDbgFormat(T first, T last, Application &app) {
+void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, Application &app) {
 #ifdef _WIN64
   constexpr auto kHeader =
       "              MT    Count    TotalSize Class Name\n";
@@ -38,15 +64,18 @@ void PrintWinDbgFormat(T first, T last, Application &app) {
   size_t total_size = 0;
   for (auto it = first; it != last; ++it) {
     if (IsCancelled()) return;
-    wprintf(kRowFormat, it->addr, it->count, it->size_total);
+    auto count = (*it.*ptr).count;
+    auto size = (*it.*ptr).size_total;
+    if (!count && !size) continue;
+    wprintf(kRowFormat, it->addr, count, size);
     uint32_t needed;
     auto hr = app.GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
     if (SUCCEEDED(hr))
       wprintf(L"%s\n", buffer);
     else
       wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
-    total_count += it->count;
-    total_size += it->size_total;
+    total_count += count;
+    total_size += size;
   }
   printf("Total %" PRIuPTR " objects\n", total_count);
   printf("Total size %" PRIuPTR " bytes\n", total_size);
@@ -102,11 +131,11 @@ int main() {
   if (FAILED(hr)) return 1;
   if (IsCancelled()) return 0;
   // Sort
-  Sort(items.begin(), items.end(), options.order, options.orderby);
+  Sort(items.begin(), items.end(), options);
   // Print
   auto first = items.begin();
   auto last = first;
   std::advance(last, (std::min)(items.size(), options.limit));
-  PrintWinDbgFormat(first, last, app);
+  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), app);
   return 0;
 }

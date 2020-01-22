@@ -8,9 +8,11 @@ typedef struct tagStat {
 
 typedef struct tagMtStat {
   UINT_PTR addr;
-  SIZE_T count;
-  SIZE_T size_total;
-  Stat gen[4];
+  Stat stat;
+  Stat gen0;
+  Stat gen1;
+  Stat gen2;
+  Stat gen3;
 } MtStat;
 
 [uuid(5929c69e-e821-4fe6-ba90-9bac000a3e9e)]

@@ -29,13 +29,23 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
         ++val;
         if (*val == 0) continue;  // reverse sort order only
       }
-      if (!wcscmp(val, L"size")) {
+      if (!wcsncmp(val, L"size", 4)) {
         orderby = OrderBy::TotalSize;
-      } else if (!wcscmp(val, L"count")) {
+        val += 4;
+      } else if (!wcsncmp(val, L"count", 5)) {
         orderby = OrderBy::Count;
+        val += 5;
       } else {
         return false;  // invalid field name to sort on
       }
+      if (val[0] == ':') {
+        if (swscanf_s(val + 1, L"%u", &orderby_gen) != 1)
+          return false;  // invalid generation number to sort on
+      } else if (val[0])
+        return false;  // unrecognized string after field name
+    } else if (!wcscmp(argv[i], L"--gen")) {
+      if (swscanf_s(val, L"%u", &gen) != 1)
+        return false;  // invalid generation number to display
     } else if (!wcscmp(argv[i], L"--help")) {
       help = true;
     } else {
@@ -47,6 +57,6 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
 
 void PrintUsage(FILE* file) {
   fprintf(file,
-          "usage: gcheapstat --pid=<pid> [--sort=(size|count)] "
-          "[--limit=<count>]\n");
+          "usage: gcheapstat --pid=<pid> [--sort=(size|count)[:<gen>]] "
+          "[--limit=<count>] [--gen=<gen>]\n");
 }

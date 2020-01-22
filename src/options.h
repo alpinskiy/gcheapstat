@@ -8,7 +8,9 @@ struct Options {
   PWSTR pipename;
   Order order{Order::Asc};
   OrderBy orderby{OrderBy::TotalSize};
+  int orderby_gen{-1};
   size_t limit{(std::numeric_limits<size_t>::max)()};
+  int gen{-1};
   bool help{false};
 
   bool ParseCommandLine(PCWSTR cmdline);
