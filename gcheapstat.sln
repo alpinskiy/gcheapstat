@@ -12,6 +12,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gcheapstatsvc", "src\gcheapstatsvc.vcxproj", "{11FC0319-51FD-4645-AE1A-AC759AEFDA62}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gcheapstat", "src\gcheapstat.vcxproj", "{B29F970D-1660-456D-8038-98D4FC6DBEDA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{11FC0319-51FD-4645-AE1A-AC759AEFDA62} = {11FC0319-51FD-4645-AE1A-AC759AEFDA62}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
