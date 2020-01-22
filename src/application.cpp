@@ -136,31 +136,31 @@ HRESULT Application::RunServerAsLocalSystem() {
   return hr;
 }
 
-Server *Server::Instance;
+RpcServer *RpcServer::Instance;
 
 HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid, PSIZE_T size) {
   size_t ret = 0;
-  auto hr = Server::Instance->CalculateMtStat(pid, &ret);
+  auto hr = RpcServer::Instance->CalculateMtStat(pid, &ret);
   if (size) *size = ret;
   return hr;
 }
 
 boolean RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
                          MtStat mtstat[]) {
-  return Server::Instance->GetMtStat(offset, size, mtstat);
+  return RpcServer::Instance->GetMtStat(offset, size, mtstat);
 }
 
 HRESULT RpcStubGetMtName(handle_t handle, UINT_PTR addr, LPBSTR name) {
-  return Server::Instance->GetMtName(addr, name);
+  return RpcServer::Instance->GetMtName(addr, name);
 }
 
 void RpcStubCancel(handle_t handle) { Cancel(); }
 
-HRESULT Server::Run(PWSTR application_pipename) {
+HRESULT RpcServer::Run(PWSTR application_pipename) {
   if (!application_pipename) return E_INVALIDARG;
   struct ScopedInstance {
-    explicit ScopedInstance(Server *ptr) { Server::Instance = ptr; }
-    ~ScopedInstance() { Server::Instance = nullptr; }
+    explicit ScopedInstance(RpcServer *ptr) { RpcServer::Instance = ptr; }
+    ~ScopedInstance() { RpcServer::Instance = nullptr; }
   } guard{this};
   HRESULT hr;
   wchar_t server_pipename[MAX_PATH];
@@ -183,7 +183,7 @@ HRESULT Server::Run(PWSTR application_pipename) {
   return (waitres == WAIT_OBJECT_0) ? S_OK : HRESULT_FROM_WIN32(GetLastError());
 }
 
-HRESULT Server::CalculateMtStat(DWORD pid, size_t *size) {
+HRESULT RpcServer::CalculateMtStat(DWORD pid, size_t *size) {
   ProcessContext process_context;
   auto hr = process_context.Initialize(pid);
   if (FAILED(hr)) return hr;
@@ -195,7 +195,7 @@ HRESULT Server::CalculateMtStat(DWORD pid, size_t *size) {
   return hr;
 }
 
-boolean Server::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
+boolean RpcServer::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
   if (mtstat_.size() < offset || (mtstat_.size() - offset) < size) return FALSE;
   auto first = mtstat_.cbegin();
   std::advance(first, offset);
@@ -205,7 +205,7 @@ boolean Server::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
   return TRUE;
 }
 
-HRESULT Server::GetMtName(uintptr_t addr, LPBSTR name) {
+HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {
   if (!name) return E_INVALIDARG;
   UINT needed = 0;
   auto hr =

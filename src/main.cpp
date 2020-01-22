@@ -88,7 +88,7 @@ int main() {
     return 1;
   }
   if (options.pipename) {
-    auto hr = Server{}.Run(options.pipename);
+    auto hr = RpcServer{}.Run(options.pipename);
     return FAILED(hr) ? 1 : 0;
   }
   if (!options.pid) {

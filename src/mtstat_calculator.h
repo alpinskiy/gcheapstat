@@ -45,7 +45,7 @@ class MtStatCalculator {
   inline void WalkSegment(CLRDATA_ADDRESS mem, CLRDATA_ADDRESS allocated,
                           DacpGcHeapDetails* heap, size_t gen) {
     WalkSegment<Alignment>(static_cast<uintptr_t>(mem),
-                           static_cast<uintptr_t>(allocated), name, heap, gen);
+                           static_cast<uintptr_t>(allocated), heap, gen);
   }
 #endif
 

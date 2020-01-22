@@ -32,7 +32,7 @@ class Application {
   friend DWORD RpcStubExchangePid(handle_t handle, DWORD pid);
 };
 
-class Server {
+class RpcServer {
  public:
   HRESULT Run(PWSTR application_pipename);
 
@@ -44,7 +44,7 @@ class Server {
   ProcessContext process_context_;
   std::vector<MtStat> mtstat_;
   wchar_t buffer_[1024];
-  static Server *Instance;
+  static RpcServer *Instance;
   friend HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid,
                                         PSIZE_T size);
   friend boolean RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
