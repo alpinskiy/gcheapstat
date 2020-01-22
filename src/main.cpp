@@ -101,10 +101,10 @@ int main() {
     }
   }
   // Bootstrap
-  struct ConsoleErr : IOutput {
+  struct Output : IOutput {
     void Print(PCWSTR str) override { fwprintf(stderr, str); }
-  } cerr;
-  auto cerr_registration = RegisterLoggerOutput(&cerr);
+  } output;
+  auto logger = RegisterLoggerOutput(&output);
   struct ConsoleCtrlHandler {
     ConsoleCtrlHandler() {
       SetConsoleCtrlHandler(ConsoleCtrlHandler::Invoke, TRUE);

@@ -178,6 +178,15 @@ HRESULT RpcServer::Run(PWSTR application_pipename) {
   if (FAILED(hr)) return hr;
   wil::unique_process_handle application_process{
       OpenProcess(SYNCHRONIZE, FALSE, pid)};
+  if (!application_process) return HRESULT_FROM_WIN32(GetLastError());
+  struct Output : IOutput {
+    explicit Output(RPC_BINDING_HANDLE handle) : handle{handle} {}
+    void Print(PCWSTR str) override {
+      // TODO: RpcProxyLogError(handle, str)
+    }
+    RPC_BINDING_HANDLE handle;
+  } output{application_binding.get()};
+  auto logger = RegisterLoggerOutput(&output);
   auto waitres = WaitForSingleObject(application_process.get(), INFINITE);
   return (waitres == WAIT_OBJECT_0) ? S_OK : HRESULT_FROM_WIN32(GetLastError());
 }
