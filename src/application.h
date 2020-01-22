@@ -20,7 +20,7 @@ class AppCore {
                     uint32_t *needed);
 
  private:
-  // Effectively runs Server::CalculateMtStat under LocalSystem account
+  // Effectively runs RpcServer::CalculateMtStat under LocalSystem account
   HRESULT ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT RunServerAsLocalSystem();
 
