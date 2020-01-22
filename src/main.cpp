@@ -128,7 +128,10 @@ int main() {
   Application app;
   std::vector<MtStat> items;
   auto hr = app.CalculateMtStat(options.pid, items);
-  if (FAILED(hr)) return 1;
+  if (FAILED(hr)) {
+    LogError(hr);
+    return 1;
+  }
   if (IsCancelled()) return 0;
   // Sort
   Sort(items.begin(), items.end(), options);

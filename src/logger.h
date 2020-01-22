@@ -4,20 +4,23 @@ class Logger {
   void RegisterOutput(IOutput* output);
   void UnregisterOutput(IOutput* output);
   void Print(PCWSTR str);
+  void PrintError(HRESULT hr);
 
   template <class... Args>
   void Printf(PCWSTR format, Args&&... args) {
-    thread_local WCHAR Buffer[1024];
     auto hr = StringCchPrintfW(Buffer, ARRAYSIZE(Buffer), format,
                                std::forward<Args>(args)...);
     _ASSERT(SUCCEEDED(hr));
     if (SUCCEEDED(hr)) Print(Buffer);
   }
+
+  static thread_local WCHAR Buffer[1024];
   std::vector<IOutput*> outputs_;
   wil::srwlock mutex_;
   friend class LoggerRegistration;
   template <class... Args>
   friend void LogError(PCWSTR format, Args&&... args);
+  friend void LogError(HRESULT hr);
 };
 
 class LoggerRegistration {
@@ -44,3 +47,5 @@ template <class... Args>
 inline void LogError(PCWSTR format, Args&&... args) {
   TheLogger.Printf(format, std::forward<Args>(args)...);
 }
+
+inline void LogError(HRESULT hr) { TheLogger.PrintError(hr); }

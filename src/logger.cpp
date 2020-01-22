@@ -1,6 +1,7 @@
 #include "logger.h"
 
 Logger TheLogger;
+thread_local WCHAR Logger::Buffer[1024];
 
 void Logger::RegisterOutput(IOutput* output) {
   auto lock = mutex_.lock_exclusive();
@@ -16,6 +17,18 @@ void Logger::UnregisterOutput(IOutput* output) {
 void Logger::Print(PCWSTR str) {
   auto lock = mutex_.lock_shared();
   for (auto sink : outputs_) sink->Print(str);
+}
+
+void Logger::PrintError(HRESULT hr) {
+  auto len =
+      FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                     NULL, hr, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+                     Buffer, _ARRAYSIZE(Buffer), NULL);
+  if (len) {
+    Print(Buffer);
+    Print(L"\n");
+  } else
+    Printf(L"Error 0x%08lx\n", hr);
 }
 
 LoggerRegistration::LoggerRegistration() : output_{nullptr} {}
