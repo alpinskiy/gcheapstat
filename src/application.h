@@ -13,7 +13,7 @@ struct ProcessContext {
   wil::com_ptr<ISOSDacInterface> sos_dac_interface;
 };
 
-class Application {
+class AppCore {
  public:
   HRESULT CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,

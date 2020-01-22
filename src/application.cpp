@@ -30,17 +30,17 @@ HRESULT ProcessContext::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
              : E_NOINTERFACE;
 }
 
-std::atomic<DWORD> Application::ServerPid;
+std::atomic<DWORD> AppCore::ServerPid;
 auto constexpr kPipeNameFormat = L"\\pipe\\gcheapstat_pid%" PRIu32;
 
 DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
-  Application::ServerPid.store(pid);
+  AppCore::ServerPid.store(pid);
   return GetCurrentProcessId();
 }
 
 void RpcStubLogError(handle_t handle, BSTR message) { LogError(message); }
 
-HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
+HRESULT AppCore::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   ProcessContext process_context;
   auto hr = process_context.Initialize(pid);
   if (SUCCEEDED(hr)) {
@@ -58,8 +58,8 @@ HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   return hr;
 }
 
-HRESULT Application::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
-                               uint32_t *needed) {
+HRESULT AppCore::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
+                           uint32_t *needed) {
   switch (context_kind_) {
     case ContextKind::Local:
       return process_context_.GetMtName(addr, size, name, needed);
@@ -79,8 +79,7 @@ HRESULT Application::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
   }
 }
 
-HRESULT Application::ServerCalculateMtStat(DWORD pid,
-                                           std::vector<MtStat> &mtstat) {
+HRESULT AppCore::ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   auto hr = RunServerAsLocalSystem();
   if (FAILED(hr)) return hr;
   SIZE_T size = 0;
@@ -100,7 +99,7 @@ HRESULT Application::ServerCalculateMtStat(DWORD pid,
   return S_OK;
 }
 
-HRESULT Application::RunServerAsLocalSystem() {
+HRESULT AppCore::RunServerAsLocalSystem() {
   if (ServerPid) return S_FALSE;
   // Run RPC server
   HRESULT hr;

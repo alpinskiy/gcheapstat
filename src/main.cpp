@@ -49,7 +49,7 @@ void Sort(T first, T last, Options &opt) {
 }
 
 template <typename T>
-void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, Application &app) {
+void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, AppCore &app) {
 #ifdef _WIN64
   constexpr auto kHeader =
       "              MT    Count    TotalSize Class Name\n";
@@ -125,7 +125,7 @@ int main() {
     }
   } console_ctrl_handler;
   // Calculate
-  Application app;
+  AppCore app;
   std::vector<MtStat> items;
   auto hr = app.CalculateMtStat(options.pid, items);
   if (FAILED(hr)) {
