@@ -125,20 +125,18 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
 HRESULT MtStatCalculator::Calculate(std::vector<MtStat>& mtstat) {
   std::unordered_map<uintptr_t, MtAddrStat>{}.swap(dict_);
   for (auto& segment : segments_[0]) {
+    auto gen = GetGeneration(segment.data.mem, segment.heap);
     if (segment.addr == segment.heap->ephemeral_heap_segment)
       WalkSegment<kAlignment>(segment.data.mem, segment.heap->alloc_allocated,
-                              L"ephemeral", segment.heap,
-                              GetGeneration(segment.data.mem, segment.heap));
+                              segment.heap, gen);
     else
       WalkSegment<kAlignment>(segment.data.mem, segment.data.allocated,
-                              L"small object", segment.heap,
-                              GetGeneration(segment.data.mem, segment.heap));
+                              segment.heap, gen);
     if (IsCancelled()) return S_FALSE;
   }
   for (auto& segment : segments_[1]) {
     WalkSegment<kAlignmentLarge>(segment.data.mem, segment.data.allocated,
-                                 L"large object", segment.heap,
-                                 DAC_NUMBERGENERATIONS - 1);
+                                 segment.heap, DAC_NUMBERGENERATIONS - 1);
     if (IsCancelled()) return S_FALSE;
   }
   std::vector<MtStat> ret;

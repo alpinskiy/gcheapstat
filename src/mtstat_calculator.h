@@ -43,22 +43,22 @@ class MtStatCalculator {
 #ifndef _WIN64
   template <size_t Alignment>
   inline void WalkSegment(CLRDATA_ADDRESS mem, CLRDATA_ADDRESS allocated,
-                          PCWSTR name, DacpGcHeapDetails* heap, size_t gen) {
+                          DacpGcHeapDetails* heap, size_t gen) {
     WalkSegment<Alignment>(static_cast<uintptr_t>(mem),
                            static_cast<uintptr_t>(allocated), name, heap, gen);
   }
 #endif
 
   template <size_t Alignment>
-  void WalkSegment(uintptr_t mem, uintptr_t allocated, PCWSTR name,
-                   DacpGcHeapDetails* heap, size_t gen) {
+  void WalkSegment(uintptr_t mem, uintptr_t allocated, DacpGcHeapDetails* heap,
+                   size_t gen) {
     if (allocated < mem) {
-      LogError(L"Invalid segment range encountered, %s segment\n", name);
+      LogError(L"Invalid segment range encountered\n");
       return;
     }
     auto size = static_cast<size_t>(allocated - mem);
     if (!size) {
-      LogError(L"Empty segment encountered, %s segment\n", name);
+      LogError(L"Empty segment encountered\n");
       return;
     }
     std::vector<BYTE> buffer(size);
@@ -66,15 +66,13 @@ class MtStatCalculator {
     if (!ReadProcessMemory(hprocess_, reinterpret_cast<LPCVOID>(mem),
                            &buffer[0], size, &read)) {
       auto hr = HRESULT_FROM_WIN32(GetLastError());
-      LogError(L"Error reading segment memory, code 0x%08lx, %s segment\n", hr,
-               name);
+      LogError(L"Error reading segment memory, code 0x%08lx\n", hr);
       return;
     }
     if (read != size) {
       LogError(
-          L"Incomplete segment memory read, bytes requested %zu, read %zu, "
-          L"%s segment\n",
-          size, read, name);
+          L"Incomplete segment memory read, bytes requested %zu, read %zu\n",
+          size, read);
       return;
     }
     PBYTE ptr = &buffer[0], end = &buffer[0] + size;
@@ -86,32 +84,29 @@ class MtStatCalculator {
     for (; allocation_context != allocation_contexts_.cend();
          ++allocation_context) {
       WalkMemory<Alignment>(
-          mem, ptr, (std::min)(allocation_context->ptr, allocated) - mem, name,
-          heap, gen);
+          mem, ptr, (std::min)(allocation_context->ptr, allocated) - mem, heap,
+          gen);
       if (allocated < allocation_context->limit) {
-        LogError(
-            L"Allocation context limit goes beyond %s segment boundaries\n",
-            name);
+        LogError(L"Allocation context limit goes beyond segment boundaries\n");
         return;
       }
       auto limit =
           allocation_context->limit + Align<kAlignment>(kMinObjectSize);
       if (allocated < limit) {
         LogError(
-            L"Aligned allocation context limit goes beyond %s segment "
-            L"boundaries\n",
-            name);
+            L"Aligned allocation context limit goes beyond segment "
+            L"boundaries\n");
         return;
       }
       size = allocated - limit;
       ptr = end - size;
       mem = limit;
     }
-    WalkMemory<Alignment>(mem, ptr, size, name, heap, gen);
+    WalkMemory<Alignment>(mem, ptr, size, heap, gen);
   }
 
   template <size_t Alignment>
-  void WalkMemory(uintptr_t addr, PBYTE ptr, size_t size, PCWSTR name,
+  void WalkMemory(uintptr_t addr, PBYTE ptr, size_t size,
                   DacpGcHeapDetails* heap, size_t& gen) {
     for (size_t object_size; kMinObjectSize <= size;
          addr += object_size, ptr += object_size, size -= object_size) {
@@ -122,9 +117,9 @@ class MtStatCalculator {
       auto mt = *reinterpret_cast<uintptr_t*>(ptr) & ~3;
       if (!mt) {
         LogError(
-            L"Zero method table address encountered, skip %zu bytes, %s "
-            L"segment gen#%zu\n",
-            size, name, gen);
+            L"Zero method table address encountered, skip %zu bytes of "
+            L"gen#%zu\n",
+            size, gen);
         return;
       }
       // Get method table data
@@ -134,9 +129,9 @@ class MtStatCalculator {
         auto hr = mt_data.Request(sos_dac_interface_.get(), mt);
         if (FAILED(hr)) {
           LogError(
-              L"Error getting method table data, code 0x%08lx, skip %zu "
-              L"bytes, %s segment gen#%zu\n",
-              hr, name, gen);
+              L"Error getting method table data, code 0x%08lx, skip %zu bytes "
+              L"of gen#%zu\n",
+              hr, size, gen);
           return;
         }
         MtAddrStat stat{mt_data.BaseSize, mt_data.ComponentSize};
@@ -157,9 +152,9 @@ class MtStatCalculator {
       // Validate object size
       if (!object_size || size < object_size) {
         LogError(
-            L"Object size %zu is out of valid range, skip %zu bytes, %s "
-            L"segment gen#%zu\n",
-            object_size, size, name, gen);
+            L"Object size %zu is out of valid range, skip %zu bytes of "
+            L"gen#%zu\n",
+            object_size, size, gen);
         return;
       }
       // Update statistics
@@ -169,14 +164,13 @@ class MtStatCalculator {
       object_size = Align<Alignment>(object_size);
       if (!object_size || size < object_size) {
         LogError(
-            L"Aligned object size is out of valid range, value %zu, skip %zu "
-            L"bytes, %s segment gen#%zu\n",
-            object_size, size, name, gen);
+            L"Aligned object size %zu is out of valid range, skip %zu "
+            L"bytes of gen#%zu\n",
+            object_size, size, gen);
         return;
       }
     }
-    if (size)
-      LogError(L"Skip %zu bytes of %s segment gen#%zu", size, name, gen);
+    if (size) LogError(L"Skip %zu bytes of gen#%zu", size, gen);
   }
 
   template <size_t Alignment>
