@@ -30,7 +30,7 @@ TryExceptRpc(F &&f, P &&... params) {
 }
 
 template <typename F, typename... P>
-inline HRESULT TryExceptRpc(typename std::result_of<F(P...)>::type &t, F &&f,
+inline HRESULT TryExceptRpc(std::result_of_t<F(P...)> &t, F &&f,
                             P &&... params) {
   HRESULT hr = S_OK;
   __try {
