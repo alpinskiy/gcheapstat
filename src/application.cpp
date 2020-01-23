@@ -182,7 +182,7 @@ HRESULT RpcServer::Run(PWSTR application_pipename) {
   struct Output : IOutput {
     explicit Output(RPC_BINDING_HANDLE handle) : handle{handle} {}
     void Print(PCWSTR str) override {
-      // TODO: RpcProxyLogError(handle, str)
+      TryExceptRpc(&RpcProxyLogError, handle, _bstr_t{str}.GetBSTR());
     }
     RPC_BINDING_HANDLE handle;
   } output{application_binding.get()};
