@@ -9,7 +9,9 @@ build:
   project: gcheapstat.sln
 for:
   -
-    platform: x86
+    matrix:
+      only:
+        - platform: x86
     after_build:
     - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.exe
     - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.pdb
@@ -17,7 +19,9 @@ for:
     artifacts:
     - path: gcheapstat32.zip
   -
-    platform: x64
+    matrix:
+      only:
+        - platform: x64
     after_build:
     - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
     - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
