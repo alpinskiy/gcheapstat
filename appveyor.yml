@@ -13,9 +13,9 @@ for:
   -
     matrix:
       only:
-        - platform: x86
-      only:
-        - configuration: Release
+        -
+          platform: x86
+          configuration: Release
     after_build:
     - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.exe
     - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.pdb
@@ -25,9 +25,9 @@ for:
   -
     matrix:
       only:
-        - platform: x64
-      only:
-        - configuration: Release
+        - 
+          platform: x64
+          configuration: Release
     after_build:
     - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
     - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
