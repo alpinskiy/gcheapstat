@@ -1,14 +1,18 @@
 image: Visual Studio 2019
+platform:
+  - x86
+  - x64
+configuration: Release
 install:
   git submodule update --init --recursive
-configuration: Release
-platform:
-- x64
 build:
   project: gcheapstat.sln
-after_build:
-- cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
-- cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
-- cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstatsvc.pdb
-artifacts:
-- path: gcheapstat64.zip
+for:
+  -
+    platform: x64
+    after_build:
+    - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
+    - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
+    - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstatsvc.pdb
+    artifacts:
+    - path: gcheapstat64.zip
