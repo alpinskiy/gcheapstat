@@ -26,6 +26,18 @@ for:
     matrix:
       only:
         -
+          platform: x64
+          configuration: Debug
+    after_build:
+    - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.exe
+    - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.pdb
+    - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstatsvc.pdb
+    artifacts:
+    - path: gcheapstat64d.zip
+  -
+    matrix:
+      only:
+        -
           platform: x86
           configuration: Release
     after_build:
