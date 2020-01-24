@@ -17,11 +17,11 @@ for:
           platform: x86
           configuration: Debug
     after_build:
-    - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Debug\gcheapstat.exe
-    - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Debug\gcheapstat.pdb
-    - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Debug\gcheapstatsvc.pdb
+      - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Debug\gcheapstat.exe
+      - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Debug\gcheapstat.pdb
+      - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Debug\gcheapstatsvc.pdb
     artifacts:
-    - path: gcheapstat32d.zip
+      - path: gcheapstat32d.zip
   -
     matrix:
       only:
