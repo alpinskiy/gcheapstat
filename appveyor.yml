@@ -29,11 +29,11 @@ for:
           platform: x64
           configuration: Debug
     after_build:
-    - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.exe
-    - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.pdb
-    - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstatsvc.pdb
+      - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.exe
+      - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.pdb
+      - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstatsvc.pdb
     artifacts:
-    - path: gcheapstat64d.zip
+      - path: gcheapstat64d.zip
   -
     matrix:
       only:
@@ -41,11 +41,11 @@ for:
           platform: x86
           configuration: Release
     after_build:
-    - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.exe
-    - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.pdb
-    - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstatsvc.pdb
+      - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.exe
+      - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.pdb
+      - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstatsvc.pdb
     artifacts:
-    - path: gcheapstat32.zip
+      - path: gcheapstat32.zip
   -
     matrix:
       only:
@@ -53,8 +53,8 @@ for:
           platform: x64
           configuration: Release
     after_build:
-    - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
-    - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
-    - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstatsvc.pdb
+      - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
+      - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
+      - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstatsvc.pdb
     artifacts:
-    - path: gcheapstat64.zip
+      - path: gcheapstat64.zip
