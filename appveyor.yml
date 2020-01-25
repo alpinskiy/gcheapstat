@@ -17,7 +17,7 @@ for:
           platform: x86
           configuration: Debug
     after_build:
-      - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\%PLATFORM%\%CONFIGURATION%\gcheapstat.exe
+      - cmd: 7z a gcheapstat32d.zip out\%PLATFORM%\%CONFIGURATION%\gcheapstat.exe
       - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\%PLATFORM%\%CONFIGURATION%\gcheapstat.pdb
       - cmd: 7z a gcheapstat32d.zip %APPVEYOR_BUILD_FOLDER%\out\%PLATFORM%\%CONFIGURATION%\gcheapstatsvc.pdb
     artifacts:
