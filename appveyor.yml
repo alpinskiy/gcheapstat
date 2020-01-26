@@ -3,4 +3,4 @@ install:
   git submodule update --init --recursive
 build_script: appveyor_build.py
 artifacts:
-  - path: gcheapstat.zip
+  - path: gcheapstat$(appveyor_repo_tag_name).zip

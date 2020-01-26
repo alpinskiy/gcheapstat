@@ -11,7 +11,7 @@ def zip_binary(platform, configuration):
   else:
     sys.exit('Expected platform either x86 or x64')
   path = os.path.join("out", platform, configuration, "gcheapstat.exe")
-  zipf = zipfile.ZipFile('gcheapstat' + getenv('APPVEYOR_REPO_TAG_NAME') + '.zip', 'a', zipfile.ZIP_DEFLATED)
+  zipf = zipfile.ZipFile('gcheapstat' + os.getenv('APPVEYOR_REPO_TAG_NAME') + '.zip', 'a', zipfile.ZIP_DEFLATED)
   zipf.write(path, name)
   zipf.close()
 
