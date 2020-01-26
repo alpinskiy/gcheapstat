@@ -23,6 +23,7 @@ def build(platform, configuration):
     '/l:C:\\Program Files\\AppVeyor\\BuildAgent\\Appveyor.MSBuildLogger.dll'])
 
 if __name__ == '__main__':
+  print(sys.argv)
   build('x86', 'Release')
   build('x64', 'Release')
   zip_binary('x86', 'Release')
