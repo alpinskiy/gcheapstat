@@ -1,6 +1,6 @@
 image: Visual Studio 2019
 install:
   git submodule update --init --recursive
-build_script: appveyor_build.py $(APPVEYOR_REPO_TAG_NAME)
+build_script: appveyor_build.py
 artifacts:
   - path: gcheapstat.zip
