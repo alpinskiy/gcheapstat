@@ -20,7 +20,7 @@ def build(platform, configuration):
     'gcheapstat.sln',
     '/p:Platform=' + platform,
     '/p:Configuration=' + configuration,
-    '/l:"C:\\Program Files\\AppVeyor\\BuildAgent\\Appveyor.MSBuildLogger.dll"'])
+    '/l:C:\\Program Files\\AppVeyor\\BuildAgent\\Appveyor.MSBuildLogger.dll'])
 
 if __name__ == '__main__':
   build('x86', 'Release')
