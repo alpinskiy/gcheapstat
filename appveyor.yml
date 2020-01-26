@@ -1,60 +1,6 @@
 image: Visual Studio 2019
-platform:
-  - x86
-  - x64
-configuration:
-  - Debug
-  - Release
 install:
   git submodule update --init --recursive
-build:
-  project: gcheapstat.sln
-for:
-  -
-    matrix:
-      only:
-        -
-          platform: x86
-          configuration: Debug
-    after_build:
-      - cmd: 7z a gcheapstat32d.zip out\%PLATFORM%\%CONFIGURATION%\gcheapstat.exe
-      - cmd: 7z a gcheapstat32d.zip out\%PLATFORM%\%CONFIGURATION%\gcheapstat.pdb
-      - cmd: 7z a gcheapstat32d.zip out\%PLATFORM%\%CONFIGURATION%\gcheapstatsvc.pdb
-    artifacts:
-      - path: gcheapstat32d.zip
-  -
-    matrix:
-      only:
-        -
-          platform: x64
-          configuration: Debug
-    after_build:
-      - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.exe
-      - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstat.pdb
-      - cmd: 7z a gcheapstat64d.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Debug\gcheapstatsvc.pdb
-    artifacts:
-      - path: gcheapstat64d.zip
-  -
-    matrix:
-      only:
-        -
-          platform: x86
-          configuration: Release
-    after_build:
-      - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.exe
-      - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstat.pdb
-      - cmd: 7z a gcheapstat32.zip %APPVEYOR_BUILD_FOLDER%\out\x86\Release\gcheapstatsvc.pdb
-    artifacts:
-      - path: gcheapstat32.zip
-  -
-    matrix:
-      only:
-        - 
-          platform: x64
-          configuration: Release
-    after_build:
-      - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.exe
-      - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstat.pdb
-      - cmd: 7z a gcheapstat64.zip %APPVEYOR_BUILD_FOLDER%\out\x64\Release\gcheapstatsvc.pdb
-    artifacts:
-      - path: gcheapstat64.zip
+build_script: appveyor_build.py
+artifacts:
+  - path: gcheapstat.zip
