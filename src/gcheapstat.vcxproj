@@ -244,6 +244,7 @@
     <ClInclude Include="application.h" />
     <ClInclude Include="clr_data_access.h" />
     <ClInclude Include="clr_data_target_impl.h" />
+    <ClInclude Include="common.h" />
     <ClInclude Include="process_context.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rpc_helpers.h" />

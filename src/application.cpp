@@ -1,12 +1,12 @@
 #include "application.h"
 
 #include "clr_data_access.h"
+#include "common.h"
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 #include "runas_localsystem.h"
 
 std::atomic<DWORD> AppCore::ServerPid;
-auto constexpr kPipeNameFormat = L"\\pipe\\gcheapstat_pid%" PRIu32;
 
 DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
   AppCore::ServerPid.store(pid);

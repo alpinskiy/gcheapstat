@@ -1,10 +1,10 @@
 #include "rpc_server.h"
 
+#include "common.h"
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 
 RpcServer *RpcServer::Instance;
-auto constexpr kPipeNameFormat = L"\\pipe\\gcheapstat_pid%" PRIu32;
 
 HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid, PSIZE_T size) {
   size_t ret = 0;
