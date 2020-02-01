@@ -248,7 +248,7 @@ HRESULT Run(Options &options) {
   } output;
   auto logger = RegisterLoggerOutput(&output);
   AppCore application;
-  ConsoleCancellationHandler cancellation_handler(application);
+  ConsoleCancellationHandler cancellation_handler{application};
   // Calculate
   std::vector<MtStat> items;
   auto hr = application.CalculateMtStat(options.pid, items);
