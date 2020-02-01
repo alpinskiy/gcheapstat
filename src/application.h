@@ -1,4 +1,5 @@
 #pragma once
+#include "options.h"
 #include "process_context.h"
 #include "rpc_h.h"
 
@@ -20,3 +21,5 @@ class AppCore {
   static std::atomic<DWORD> ServerPid;
   friend DWORD RpcStubExchangePid(handle_t handle, DWORD pid);
 };
+
+HRESULT Run(Options &options);
