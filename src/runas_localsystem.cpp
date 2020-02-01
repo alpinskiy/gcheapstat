@@ -1,8 +1,5 @@
 #include "runas_localsystem.h"
 
-#include "cancellation.h"
-#include "logger.h"
-
 AsLocalSystem::AsLocalSystem()
     : service_on_disk_{false}, service_name_{}, service_path_{} {}
 

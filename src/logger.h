@@ -1,4 +1,5 @@
 #pragma once
+#include "output.h"
 
 class Logger {
   void RegisterOutput(IOutput* output);

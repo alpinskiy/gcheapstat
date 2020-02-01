@@ -16,8 +16,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cancellation.h"
-#include "crosscomp.h"
-#include "output.h"
 #include "wil/com.h"
 #include "wil/resource.h"
+//
+#include "cancellation.h"
+#include "crosscomp.h"
+#include "logger.h"

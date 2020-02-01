@@ -1,5 +1,3 @@
-#include "logger.h"
-
 Logger TheLogger;
 thread_local WCHAR Logger::Buffer[1024];
 

@@ -1,6 +1,6 @@
 #include "application.h"
-#include "logger.h"
 #include "options.h"
+#include "rpc_server.h"
 
 Stat MtStat::*GetStatPtr(int gen) {
   _ASSERT(-1 <= gen && gen <= 3);

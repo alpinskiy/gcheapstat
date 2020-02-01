@@ -16,6 +16,8 @@
     <ClCompile Include="mtstat_calculator.cpp" />
     <ClCompile Include="clr_data_access.cpp" />
     <ClCompile Include="clr_data_target_impl.cpp" />
+    <ClCompile Include="process_context.cpp" />
+    <ClCompile Include="rpc_server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="output.h" />
@@ -32,6 +34,8 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="clr_data_access.h" />
     <ClInclude Include="clr_data_target_impl.h" />
+    <ClInclude Include="rpc_server.h" />
+    <ClInclude Include="process_context.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="rpc.idl" />

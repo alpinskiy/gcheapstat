@@ -194,9 +194,11 @@
     <ClCompile Include="application.cpp" />
     <ClCompile Include="clr_data_access.cpp" />
     <ClCompile Include="clr_data_target_impl.cpp" />
+    <ClCompile Include="process_context.cpp" />
     <ClCompile Include="rpc_helpers.cpp" />
     <ClCompile Include="cancellation.cpp" />
     <ClCompile Include="mtstat_calculator.cpp" />
+    <ClCompile Include="rpc_server.cpp" />
     <ClCompile Include="runas_localsystem.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
@@ -242,10 +244,12 @@
     <ClInclude Include="application.h" />
     <ClInclude Include="clr_data_access.h" />
     <ClInclude Include="clr_data_target_impl.h" />
+    <ClInclude Include="process_context.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rpc_helpers.h" />
     <ClInclude Include="cancellation.h" />
     <ClInclude Include="mtstat_calculator.h" />
+    <ClInclude Include="rpc_server.h" />
     <ClInclude Include="runas_localsystem.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="options.h" />

@@ -1,7 +1,5 @@
 #include "clr_data_target_impl.h"
 
-#include "logger.h"
-
 ClrDataTargetImpl::ClrDataTargetImpl(HANDLE process, ProcessInfo *procinfo)
     : ref_count_{0}, process_{process}, procinfo_{procinfo} {
   SYSTEM_INFO system_info{};

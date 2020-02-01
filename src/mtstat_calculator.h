@@ -1,6 +1,5 @@
 #pragma once
 #include "dacprivate.h"
-#include "logger.h"
 #include "rpc_h.h"  // MtStat
 
 #ifdef _WIN64
