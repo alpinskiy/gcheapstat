@@ -4,32 +4,27 @@
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 
-RpcServer *RpcServer::Instance;
-
 HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid, PSIZE_T size) {
   size_t ret = 0;
-  auto hr = RpcServer::Instance->CalculateMtStat(pid, &ret);
-  if (size) *size = ret;
+  auto hr = RpcServerProxy::CalculateMtStat(pid, &ret);
+  *size = ret;
   return hr;
 }
 
 boolean RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
                          MtStat mtstat[]) {
-  return RpcServer::Instance->GetMtStat(offset, size, mtstat);
+  return RpcServerProxy::GetMtStat(offset, size, mtstat);
 }
 
 HRESULT RpcStubGetMtName(handle_t handle, UINT_PTR addr, LPBSTR name) {
-  return RpcServer::Instance->GetMtName(addr, name);
+  return RpcServerProxy::GetMtName(addr, name);
 }
 
 void RpcStubCancel(handle_t handle) { Cancel(); }
 
-HRESULT RpcServer::Run(PWSTR application_pipename) {
-  if (!application_pipename) return E_INVALIDARG;
-  struct ScopedInstance {
-    explicit ScopedInstance(RpcServer *ptr) { RpcServer::Instance = ptr; }
-    ~ScopedInstance() { RpcServer::Instance = nullptr; }
-  } guard{this};
+HRESULT RpcServer::Run(PWSTR pipename) {
+  if (!pipename) return E_INVALIDARG;
+  RpcServerProxy proxy{this};
   HRESULT hr;
   wchar_t server_pipename[MAX_PATH];
   auto fail =
@@ -39,7 +34,7 @@ HRESULT RpcServer::Run(PWSTR application_pipename) {
                                       RpcStubServer_v0_0_s_ifspec));
   if (fail) return hr;
   wil::unique_rpc_binding application_binding;
-  hr = RpcInitializeClient(application_pipename, &application_binding);
+  hr = RpcInitializeClient(pipename, &application_binding);
   if (FAILED(hr)) return hr;
   DWORD pid = 0;
   hr = TryExceptRpc(pid, &RpcProxyExchangePid, application_binding.get(),
@@ -89,4 +84,34 @@ HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {
       process_context_.GetMtName(addr, ARRAYSIZE(buffer_), buffer_, &needed);
   if (SUCCEEDED(hr)) *name = _bstr_t{buffer_}.Detach();
   return hr;
+}
+
+wil::srwlock RpcServerProxy::Mutex;
+RpcServer *RpcServerProxy::Instance;
+
+RpcServerProxy::RpcServerProxy(RpcServer *rpc_server) {
+  _ASSERT(rpc_server);
+  auto lock = Mutex.lock_exclusive();
+  _ASSERT(!Instance);
+  Instance = rpc_server;
+}
+
+RpcServerProxy::~RpcServerProxy() {
+  auto lock = Mutex.lock_exclusive();
+  Instance = nullptr;
+}
+
+HRESULT RpcServerProxy::CalculateMtStat(DWORD pid, size_t *size) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->CalculateMtStat(pid, size) : E_POINTER;
+}
+
+boolean RpcServerProxy::GetMtStat(size_t offset, DWORD size, MtStat stat[]) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->GetMtStat(offset, size, stat) : FALSE;
+}
+
+HRESULT RpcServerProxy::GetMtName(uintptr_t addr, LPBSTR name) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->GetMtName(addr, name) : E_POINTER;
 }
