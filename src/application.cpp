@@ -200,7 +200,7 @@ void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, AppCore &app) {
 class ConsoleCancellationHandler {
   // Must outlive the application
  public:
-  ConsoleCancellationHandler(AppCore &application) {
+  explicit ConsoleCancellationHandler(AppCore &application) {
     {
       auto lock = Mutex.lock_exclusive();
       _ASSERT(!Application);
