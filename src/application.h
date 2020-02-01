@@ -8,6 +8,7 @@ class AppCore {
   HRESULT CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
                     uint32_t *needed);
+  void Cancel();
 
  private:
   // Effectively runs RpcServer::CalculateMtStat under LocalSystem account
@@ -19,6 +20,7 @@ class AppCore {
   ProcessContext process_context_;
   wil::unique_rpc_binding server_binding_;
   static std::atomic<DWORD> ServerPid;
+  static std::atomic_bool RpcInitialized;
   friend DWORD RpcStubExchangePid(handle_t handle, DWORD pid);
 };
 

@@ -7,6 +7,7 @@
 #include "runas_localsystem.h"
 
 std::atomic<DWORD> AppCore::ServerPid;
+std::atomic_bool AppCore::RpcInitialized;
 
 DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
   AppCore::ServerPid.store(pid);
@@ -54,6 +55,10 @@ HRESULT AppCore::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
   }
 }
 
+void AppCore::Cancel() {
+  if (RpcInitialized) TryExceptRpc(RpcProxyCancel, server_binding_.get());
+}
+
 HRESULT AppCore::ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   auto hr = RunServerAsLocalSystem();
   if (FAILED(hr)) return hr;
@@ -84,7 +89,7 @@ HRESULT AppCore::RunServerAsLocalSystem() {
                                    kPipeNameFormat, GetCurrentProcessId())) ||
       FAILED(hr = RpcInitializeServer(pipename, RpcStubClient_v0_0_s_ifspec));
   if (fail) return hr;
-  // Spawn a new process running under LocalSystem account
+  // Spawn a new process running under the LocalSystem account
   wchar_t filepath[MAX_PATH];
   auto length = GetModuleFileNameW(nullptr, filepath, ARRAYSIZE(filepath) - 1);
   auto error = GetLastError();
@@ -103,10 +108,13 @@ HRESULT AppCore::RunServerAsLocalSystem() {
   DWORD server_pid;
   for (; !(server_pid = ServerPid.load()); Sleep(1))
     if (IsCancelled()) return S_FALSE;
-  // Connect back to the spawned process
+  // Connect back
   hr = StringCchPrintfW(pipename, ARRAYSIZE(pipename), kPipeNameFormat,
                         server_pid);
-  if (SUCCEEDED(hr)) hr = RpcInitializeClient(pipename, &server_binding_);
+  if (SUCCEEDED(hr)) {
+    hr = RpcInitializeClient(pipename, &server_binding_);
+    RpcInitialized = !!server_binding_;
+  }
   return hr;
 }
 
@@ -189,35 +197,61 @@ void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, AppCore &app) {
   printf("Total size %" PRIuPTR " bytes\n", total_size);
 }
 
+class ConsoleCancellationHandler {
+  // Must outlive the application
+ public:
+  ConsoleCancellationHandler(AppCore &application) {
+    {
+      auto lock = Mutex.lock_exclusive();
+      _ASSERT(!Application);
+      Application = &application;
+    }
+    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, TRUE);
+  }
+  ~ConsoleCancellationHandler() {
+    {
+      auto lock = Mutex.lock_exclusive();
+      Application = nullptr;
+    }
+    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, FALSE);
+    if (IsCancelled()) printf("Operation cancelled by user\n");
+  }
+
+ private:
+  static BOOL WINAPI Invoke(DWORD code) {
+    switch (code) {
+      case CTRL_C_EVENT:
+      case CTRL_BREAK_EVENT:
+      case CTRL_CLOSE_EVENT:
+        Cancel();
+        CancelApplication();
+        return TRUE;
+      default:
+        return FALSE;
+    }
+  }
+  static void CancelApplication() {
+    auto lock = Mutex.lock_exclusive();
+    if (Application) Application->Cancel();
+  }
+  static wil::srwlock Mutex;
+  static AppCore *Application;
+};
+
+wil::srwlock ConsoleCancellationHandler::Mutex;
+AppCore *ConsoleCancellationHandler::Application;
+
 HRESULT Run(Options &options) {
   // Bootstrap
   struct Output : IOutput {
     void Print(PCWSTR str) override { fwprintf(stderr, str); }
   } output;
   auto logger = RegisterLoggerOutput(&output);
-  struct ConsoleCtrlHandler {
-    ConsoleCtrlHandler() {
-      SetConsoleCtrlHandler(ConsoleCtrlHandler::Invoke, TRUE);
-    }
-    ~ConsoleCtrlHandler() {
-      if (IsCancelled()) printf("Operation cancelled by user\n");
-    }
-    static BOOL WINAPI Invoke(DWORD code) {
-      switch (code) {
-        case CTRL_C_EVENT:
-        case CTRL_BREAK_EVENT:
-        case CTRL_CLOSE_EVENT:
-          Cancel();
-          return TRUE;
-        default:
-          return FALSE;
-      }
-    }
-  } console_ctrl_handler;
+  AppCore application;
+  ConsoleCancellationHandler cancellation_handler(application);
   // Calculate
-  AppCore app;
   std::vector<MtStat> items;
-  auto hr = app.CalculateMtStat(options.pid, items);
+  auto hr = application.CalculateMtStat(options.pid, items);
   if (FAILED(hr)) {
     LogError(hr);
     return 1;
@@ -229,6 +263,6 @@ HRESULT Run(Options &options) {
   auto first = items.begin();
   auto last = first;
   std::advance(last, (std::min)(items.size(), options.limit));
-  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), app);
+  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), application);
   return S_OK;
 }
