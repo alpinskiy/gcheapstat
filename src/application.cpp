@@ -1,22 +1,71 @@
 #include "application.h"
 
 #include "clr_data_access.h"
-#include "common.h"
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 #include "runas_localsystem.h"
 
-std::atomic<DWORD> AppCore::ServerPid;
-std::atomic_bool AppCore::RpcInitialized;
-
 DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
-  AppCore::ServerPid.store(pid);
-  return GetCurrentProcessId();
+  return ApplicationProxy::ExchangePid(pid);
 }
 
 void RpcStubLogError(handle_t handle, BSTR message) { LogError(message); }
 
-HRESULT AppCore::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
+HRESULT Application::Run(Options &options) {
+  // Bootstrap
+  StdErrorOutput cerr;
+  auto logger = RegisterLoggerOutput(&cerr);
+  ApplicationProxy proxy{this};
+  ConsoleCancellationHandler cancellation;
+  // Calculate
+  std::vector<MtStat> items;
+  auto hr = CalculateMtStat(options.pid, items);
+  if (FAILED(hr)) return hr;
+  if (IsCancelled()) return S_FALSE;
+  // Sort
+  Sort(items.begin(), items.end(), options);
+  // Print
+  auto first = items.begin();
+  auto last = first;
+  std::advance(last, (std::min)(items.size(), options.limit));
+  PrintWinDbgFormat(first, last, GetStatPtr(options.gen));
+  return S_OK;
+}
+
+void Application::PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
+                                    Stat MtStat::*ptr) {
+#ifdef _WIN64
+  constexpr auto kHeader =
+      "              MT    Count    TotalSize Class Name\n";
+  constexpr auto kRowFormat = L"%016" PRIx64 "%9" PRIu64 "%13" PRIu64 " ";
+#else
+  constexpr auto kHeader = "      MT    Count    TotalSize Class Name\n";
+  constexpr auto kRowFormat = L"%08" PRIx32 "%9" PRIu32 "%13" PRIu32 " ";
+#endif
+  printf(kHeader);
+  wchar_t buffer[1024];
+  size_t total_count = 0;
+  size_t total_size = 0;
+  for (auto it = first; it != last; ++it) {
+    if (IsCancelled()) return;
+    auto count = (*it.*ptr).count;
+    auto size = (*it.*ptr).size_total;
+    if (!count && !size) continue;
+    wprintf(kRowFormat, it->addr, count, size);
+    uint32_t needed;
+    auto hr = GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
+    if (SUCCEEDED(hr))
+      wprintf(L"%s\n", buffer);
+    else
+      wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
+    total_count += count;
+    total_size += size;
+  }
+  printf("Total %" PRIuPTR " objects\n", total_count);
+  printf("Total size %" PRIuPTR " bytes\n", total_size);
+}
+
+HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   ProcessContext process_context;
   auto hr = process_context.Initialize(pid);
   if (SUCCEEDED(hr)) {
@@ -34,8 +83,8 @@ HRESULT AppCore::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   return hr;
 }
 
-HRESULT AppCore::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
-                           uint32_t *needed) {
+HRESULT Application::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
+                               uint32_t *needed) {
   switch (context_kind_) {
     case ContextKind::Local:
       return process_context_.GetMtName(addr, size, name, needed);
@@ -55,11 +104,8 @@ HRESULT AppCore::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
   }
 }
 
-void AppCore::Cancel() {
-  if (RpcInitialized) TryExceptRpc(RpcProxyCancel, server_binding_.get());
-}
-
-HRESULT AppCore::ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
+HRESULT Application::ServerCalculateMtStat(DWORD pid,
+                                           std::vector<MtStat> &mtstat) {
   auto hr = RunServerAsLocalSystem();
   if (FAILED(hr)) return hr;
   SIZE_T size = 0;
@@ -79,7 +125,7 @@ HRESULT AppCore::ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
   return S_OK;
 }
 
-HRESULT AppCore::RunServerAsLocalSystem() {
+HRESULT Application::RunServerAsLocalSystem() {
   if (ServerPid) return S_FALSE;
   // Run RPC server
   HRESULT hr;
@@ -118,6 +164,30 @@ HRESULT AppCore::RunServerAsLocalSystem() {
   return hr;
 }
 
+DWORD Application::ExchangePid(DWORD pid) {
+  ServerPid.store(pid);
+  return GetCurrentProcessId();
+}
+
+void Application::Cancel() {
+  if (RpcInitialized) TryExceptRpc(RpcProxyCancel, server_binding_.get());
+}
+
+ApplicationProxy::ApplicationProxy(Application *application)
+    : Proxy{application} {}
+
+DWORD ApplicationProxy::ExchangePid(DWORD pid) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->ExchangePid(pid) : -1;
+}
+
+void ApplicationProxy::Cancel() {
+  auto lock = Mutex.lock_exclusive();
+  if (Instance) Instance->Cancel();
+}
+
+void StdErrorOutput::Print(PCWSTR str) { fwprintf(stderr, str); }
+
 Stat MtStat::*GetStatPtr(int gen) {
   _ASSERT(-1 <= gen && gen <= 3);
   switch (gen) {
@@ -135,134 +205,4 @@ Stat MtStat::*GetStatPtr(int gen) {
     default:
       return &MtStat::stat;
   }
-}
-
-template <class T, template <class> class C>
-struct MtStatComparer {
-  explicit MtStatComparer(OrderBy orderby, int gen)
-      : ptr{GetStatPtr(gen)},
-        ptr2{orderby == OrderBy::Count ? &Stat::count : &Stat::size_total} {
-    _ASSERT(orderby == OrderBy::Count || orderby == OrderBy::TotalSize);
-  }
-  bool operator()(MtStat &a, MtStat &b) {
-    return cmp(a.*ptr.*ptr2, b.*ptr.*ptr2);
-  }
-  Stat MtStat::*ptr;
-  T Stat::*ptr2;
-  C<T> cmp;
-};
-
-template <typename T>
-void Sort(T first, T last, Options &opt) {
-  _ASSERT(opt.order == Order::Asc || opt.order == Order::Desc);
-  if (opt.order == Order::Asc)
-    std::sort(first, last,
-              MtStatComparer<SIZE_T, std::less>{opt.orderby, opt.orderby_gen});
-  else
-    std::sort(
-        first, last,
-        MtStatComparer<SIZE_T, std::greater>{opt.orderby, opt.orderby_gen});
-}
-
-template <typename T>
-void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, AppCore &app) {
-#ifdef _WIN64
-  constexpr auto kHeader =
-      "              MT    Count    TotalSize Class Name\n";
-  constexpr auto kRowFormat = L"%016" PRIx64 "%9" PRIu64 "%13" PRIu64 " ";
-#else
-  constexpr auto kHeader = "      MT    Count    TotalSize Class Name\n";
-  constexpr auto kRowFormat = L"%08" PRIx32 "%9" PRIu32 "%13" PRIu32 " ";
-#endif
-  printf(kHeader);
-  wchar_t buffer[1024];
-  size_t total_count = 0;
-  size_t total_size = 0;
-  for (auto it = first; it != last; ++it) {
-    if (IsCancelled()) return;
-    auto count = (*it.*ptr).count;
-    auto size = (*it.*ptr).size_total;
-    if (!count && !size) continue;
-    wprintf(kRowFormat, it->addr, count, size);
-    uint32_t needed;
-    auto hr = app.GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
-    if (SUCCEEDED(hr))
-      wprintf(L"%s\n", buffer);
-    else
-      wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
-    total_count += count;
-    total_size += size;
-  }
-  printf("Total %" PRIuPTR " objects\n", total_count);
-  printf("Total size %" PRIuPTR " bytes\n", total_size);
-}
-
-class ConsoleCancellationHandler {
-  // Must outlive the application
- public:
-  explicit ConsoleCancellationHandler(AppCore &application) {
-    {
-      auto lock = Mutex.lock_exclusive();
-      _ASSERT(!Application);
-      Application = &application;
-    }
-    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, TRUE);
-  }
-  ~ConsoleCancellationHandler() {
-    {
-      auto lock = Mutex.lock_exclusive();
-      Application = nullptr;
-    }
-    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, FALSE);
-    if (IsCancelled()) printf("Operation cancelled by user\n");
-  }
-
- private:
-  static BOOL WINAPI Invoke(DWORD code) {
-    switch (code) {
-      case CTRL_C_EVENT:
-      case CTRL_BREAK_EVENT:
-      case CTRL_CLOSE_EVENT:
-        Cancel();
-        CancelApplication();
-        return TRUE;
-      default:
-        return FALSE;
-    }
-  }
-  static void CancelApplication() {
-    auto lock = Mutex.lock_exclusive();
-    if (Application) Application->Cancel();
-  }
-  static wil::srwlock Mutex;
-  static AppCore *Application;
-};
-
-wil::srwlock ConsoleCancellationHandler::Mutex;
-AppCore *ConsoleCancellationHandler::Application;
-
-HRESULT Run(Options &options) {
-  // Bootstrap
-  struct Output : IOutput {
-    void Print(PCWSTR str) override { fwprintf(stderr, str); }
-  } output;
-  auto logger = RegisterLoggerOutput(&output);
-  AppCore application;
-  ConsoleCancellationHandler cancellation_handler(application);
-  // Calculate
-  std::vector<MtStat> items;
-  auto hr = application.CalculateMtStat(options.pid, items);
-  if (FAILED(hr)) {
-    LogError(hr);
-    return 1;
-  }
-  if (IsCancelled()) return 0;
-  // Sort
-  Sort(items.begin(), items.end(), options);
-  // Print
-  auto first = items.begin();
-  auto last = first;
-  std::advance(last, (std::min)(items.size(), options.limit));
-  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), application);
-  return S_OK;
 }

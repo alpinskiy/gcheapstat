@@ -1,6 +1,5 @@
 #include "rpc_server.h"
 
-#include "common.h"
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 
@@ -86,20 +85,7 @@ HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {
   return hr;
 }
 
-wil::srwlock RpcServerProxy::Mutex;
-RpcServer *RpcServerProxy::Instance;
-
-RpcServerProxy::RpcServerProxy(RpcServer *rpc_server) {
-  _ASSERT(rpc_server);
-  auto lock = Mutex.lock_exclusive();
-  _ASSERT(!Instance);
-  Instance = rpc_server;
-}
-
-RpcServerProxy::~RpcServerProxy() {
-  auto lock = Mutex.lock_exclusive();
-  Instance = nullptr;
-}
+RpcServerProxy::RpcServerProxy(RpcServer *rpc_server) : Proxy{rpc_server} {}
 
 HRESULT RpcServerProxy::CalculateMtStat(DWORD pid, size_t *size) {
   auto lock = Mutex.lock_exclusive();

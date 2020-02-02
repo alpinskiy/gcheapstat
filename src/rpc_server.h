@@ -1,4 +1,5 @@
 #pragma once
+#include "common.h"
 #include "process_context.h"
 #include "rpc_h.h"
 
@@ -17,20 +18,11 @@ class RpcServer {
   friend class RpcServerProxy;
 };
 
-class RpcServerProxy {
+class RpcServerProxy : Proxy<RpcServer> {
  public:
   explicit RpcServerProxy(RpcServer *rpc_server);
-  ~RpcServerProxy();
-  RpcServerProxy(const RpcServerProxy &) = delete;
-  RpcServerProxy(RpcServerProxy &&) = delete;
-  RpcServerProxy &operator=(const RpcServerProxy &) = delete;
-  RpcServerProxy &operator=(RpcServerProxy &&) = delete;
 
   static HRESULT CalculateMtStat(DWORD pid, size_t *size);
   static boolean GetMtStat(size_t offset, DWORD size, MtStat stat[]);
   static HRESULT GetMtName(uintptr_t addr, LPBSTR name);
-
- private:
-  static wil::srwlock Mutex;
-  static RpcServer *Instance;
 };

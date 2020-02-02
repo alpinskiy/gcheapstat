@@ -21,7 +21,7 @@ int main() {
       return 1;
     }
   }
-  auto hr = Run(options);
+  auto hr = Application{}.Run(options);
   if (FAILED(hr)) {
     LogError(hr);
     return 1;
