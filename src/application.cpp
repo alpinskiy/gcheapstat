@@ -119,6 +119,8 @@ HRESULT Application::RunServerAsLocalSystem() {
          FAILED(hr = RunAsLocalSystem(cmdline));
   if (fail) return hr;
   // Wait for the spawned process connect
+  // TODO: It is wrong to spin until non zero PID received
+  // because ExchangePid might be called with zero value
   DWORD server_pid;
   for (; !(server_pid = server_pid_.load()); Sleep(1))
     if (IsCancelled()) return S_FALSE;
