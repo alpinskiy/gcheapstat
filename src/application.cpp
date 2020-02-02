@@ -14,7 +14,7 @@ void RpcStubLogError(handle_t handle, BSTR message) { wprintf(message); }
 
 Application::Application()
     : context_kind_{ContextKind::None},
-      server_pid_{-1},
+      server_pid_{0},
       server_binding_initialized_{false} {}
 
 HRESULT Application::Run(Options &options) {
