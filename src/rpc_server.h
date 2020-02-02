@@ -26,3 +26,12 @@ class RpcServerProxy : Proxy<RpcServer> {
   static boolean GetMtStat(size_t offset, DWORD size, MtStat stat[]);
   static HRESULT GetMtName(uintptr_t addr, LPBSTR name);
 };
+
+class RpcOutput : public IOutput {
+ public:
+  explicit RpcOutput(RPC_BINDING_HANDLE handle) : handle_{handle} {}
+  void Print(PCWSTR str) override;
+
+ private:
+  RPC_BINDING_HANDLE handle_;
+};

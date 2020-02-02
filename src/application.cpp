@@ -12,6 +12,9 @@ DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
 void RpcStubLogError(handle_t handle, BSTR message) { LogError(message); }
 
 HRESULT Application::Run(Options &options) {
+  Output output;
+  auto logger = RegisterLoggerOutput(&output);
+  CancellationHandler cancellation_handler;
   ApplicationProxy proxy{this};
   // Calculate
   std::vector<MtStat> items;
@@ -181,6 +184,8 @@ void ApplicationProxy::Cancel() {
   auto lock = Mutex.lock_exclusive();
   if (Instance) Instance->Cancel();
 }
+
+void Output::Print(PCWSTR str) { fwprintf(stderr, str); }
 
 Stat MtStat::*GetStatPtr(int gen) {
   _ASSERT(-1 <= gen && gen <= 3);

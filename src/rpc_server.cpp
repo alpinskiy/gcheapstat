@@ -42,13 +42,7 @@ HRESULT RpcServer::Run(PWSTR pipename) {
   wil::unique_process_handle application_process{
       OpenProcess(SYNCHRONIZE, FALSE, pid)};
   if (!application_process) return HRESULT_FROM_WIN32(GetLastError());
-  struct Output : IOutput {
-    explicit Output(RPC_BINDING_HANDLE handle) : handle{handle} {}
-    void Print(PCWSTR str) override {
-      TryExceptRpc(&RpcProxyLogError, handle, _bstr_t{str}.GetBSTR());
-    }
-    RPC_BINDING_HANDLE handle;
-  } output{application_binding.get()};
+  RpcOutput output{application_binding.get()};
   auto logger = RegisterLoggerOutput(&output);
   auto waitres = WaitForSingleObject(application_process.get(), INFINITE);
   return (waitres == WAIT_OBJECT_0) ? S_OK : HRESULT_FROM_WIN32(GetLastError());
@@ -100,4 +94,8 @@ boolean RpcServerProxy::GetMtStat(size_t offset, DWORD size, MtStat stat[]) {
 HRESULT RpcServerProxy::GetMtName(uintptr_t addr, LPBSTR name) {
   auto lock = Mutex.lock_exclusive();
   return Instance ? Instance->GetMtName(addr, name) : E_POINTER;
+}
+
+void RpcOutput::Print(PCWSTR str) {
+  TryExceptRpc(&RpcProxyLogError, handle_, _bstr_t{str}.GetBSTR());
 }

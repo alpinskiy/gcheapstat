@@ -2,35 +2,6 @@
 #include "options.h"
 #include "rpc_server.h"
 
-class CancellationHandler {
- public:
-  explicit inline CancellationHandler() {
-    SetConsoleCtrlHandler(CancellationHandler::Invoke, TRUE);
-  }
-  inline ~CancellationHandler() {
-    SetConsoleCtrlHandler(CancellationHandler::Invoke, FALSE);
-    if (IsCancelled()) printf("Operation cancelled by user\n");
-  }
-
- private:
-  static BOOL WINAPI Invoke(DWORD code) {
-    switch (code) {
-      case CTRL_C_EVENT:
-      case CTRL_BREAK_EVENT:
-      case CTRL_CLOSE_EVENT:
-        Cancel();
-        ApplicationProxy::Cancel();
-        return TRUE;
-      default:
-        return FALSE;
-    }
-  }
-};
-
-struct Output : IOutput {
-  void Print(PCWSTR str) override { fwprintf(stderr, str); }
-};
-
 int main() {
   Options options{};
   if (!options.ParseCommandLine(GetCommandLineW())) {
@@ -50,9 +21,6 @@ int main() {
       return 1;
     }
   }
-  Output output;
-  auto logger = RegisterLoggerOutput(&output);
-  CancellationHandler cancellation_handler;
   auto hr = Application{}.Run(options);
   if (FAILED(hr)) {
     LogError(hr);
