@@ -38,13 +38,13 @@ class ApplicationProxy : Proxy<Application> {
   static void Cancel();
 };
 
-class CancellationHandler {
+class ConsoleCancellationHandler {
  public:
-  explicit inline CancellationHandler() {
-    SetConsoleCtrlHandler(CancellationHandler::Invoke, TRUE);
+  explicit inline ConsoleCancellationHandler() {
+    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, TRUE);
   }
-  inline ~CancellationHandler() {
-    SetConsoleCtrlHandler(CancellationHandler::Invoke, FALSE);
+  inline ~ConsoleCancellationHandler() {
+    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, FALSE);
     if (IsCancelled()) printf("Operation cancelled by user\n");
   }
 
@@ -63,7 +63,7 @@ class CancellationHandler {
   }
 };
 
-struct Output : IOutput {
+struct ConsoleOutput : IOutput {
   void Print(PCWSTR str) override;
 };
 
