@@ -6,7 +6,7 @@
 
 class RpcServer {
  public:
-  template <size_t BufferSize>
+  template <uint32_t BufferSize>
   RpcServer(wchar_t (&buffer)[BufferSize])
       : buffer_{buffer}, buffer_size_{BufferSize} {}
   HRESULT Run(PWSTR pipename);
@@ -28,7 +28,7 @@ class RpcServer {
   ProcessContext process_context_;
   std::vector<MtStat> mtstat_;
   wchar_t *buffer_;
-  size_t buffer_size_;
+  uint32_t buffer_size_;
   wil::unique_rpc_binding application_binding_;
   friend class RpcServerProxy;
 };
