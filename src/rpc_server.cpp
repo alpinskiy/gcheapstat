@@ -85,7 +85,7 @@ boolean RpcServer::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
 
 HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {
   if (!name) return E_INVALIDARG;
-  UINT needed = 0;
+  uint32_t needed = 0;
   auto hr = process_context_.GetMtName(addr, buffer_size_, buffer_, &needed);
   if (SUCCEEDED(hr)) *name = _bstr_t{buffer_}.Detach();
   return hr;
