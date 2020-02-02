@@ -2,6 +2,7 @@
 #include "rpc_h.h"  // MtStat
 
 struct IMtNameResolver {
+  // No virtual destructor intentionally
   virtual HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
                             uint32_t *needed) = 0;
 };
