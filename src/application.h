@@ -6,16 +6,6 @@
 #include "process_context.h"
 #include "rpc_h.h"
 
-class Application;
-
-class ApplicationProxy : Proxy<Application> {
- public:
-  explicit ApplicationProxy(Application *ptr);
-
-  static DWORD ExchangePid(DWORD pid);
-  static void Cancel();
-};
-
 class Application : IMtNameResolver {
  public:
   Application();
@@ -35,11 +25,18 @@ class Application : IMtNameResolver {
   ConsoleCtrlHandler console_ctrl_handler_;
   ContextKind context_kind_;
   ProcessContext process_context_;
+  std::atomic<DWORD> server_pid_;
   wil::unique_rpc_binding server_binding_;
-  std::atomic<DWORD> ServerPid;
-  std::atomic_bool RpcInitialized;
-  ApplicationProxy proxy_;
+  std::atomic_bool server_binding_initialized_;
   friend class ApplicationProxy;
+};
+
+class ApplicationProxy : Proxy<Application> {
+ public:
+  explicit ApplicationProxy(Application *ptr);
+
+  static DWORD ExchangePid(DWORD pid);
+  static void Cancel();
 };
 
 Stat MtStat::*GetStatPtr(int gen);

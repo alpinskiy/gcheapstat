@@ -25,11 +25,11 @@ void ApplicationProxy::Cancel() {
 
 Application::Application()
     : context_kind_{ContextKind::None},
-      ServerPid{-1},
-      RpcInitialized{false},
-      proxy_{this} {}
+      server_pid_{-1},
+      server_binding_initialized_{false} {}
 
 HRESULT Application::Run(Options &options) {
+  ApplicationProxy proxy{this};
   // Calculate
   std::vector<MtStat> items;
   auto hr = CalculateMtStat(options.pid, items);
@@ -106,7 +106,7 @@ HRESULT Application::ServerCalculateMtStat(DWORD pid,
 }
 
 HRESULT Application::RunServerAsLocalSystem() {
-  if (ServerPid) return S_FALSE;
+  if (server_pid_) return S_FALSE;
   // Run RPC server
   HRESULT hr;
   wchar_t pipename[MAX_PATH];
@@ -132,25 +132,26 @@ HRESULT Application::RunServerAsLocalSystem() {
   if (fail) return hr;
   // Wait for the spawned process connect
   DWORD server_pid;
-  for (; !(server_pid = ServerPid.load()); Sleep(1))
+  for (; !(server_pid = server_pid_.load()); Sleep(1))
     if (IsCancelled()) return S_FALSE;
   // Connect back
   hr = StringCchPrintfW(pipename, ARRAYSIZE(pipename), kPipeNameFormat,
                         server_pid);
   if (SUCCEEDED(hr)) {
     hr = RpcInitializeClient(pipename, &server_binding_);
-    RpcInitialized = !!server_binding_;
+    server_binding_initialized_ = !!server_binding_;
   }
   return hr;
 }
 
 DWORD Application::ExchangePid(DWORD pid) {
-  ServerPid.store(pid);
+  server_pid_.store(pid);
   return GetCurrentProcessId();
 }
 
 void Application::Cancel() {
-  if (RpcInitialized) TryExceptRpc(RpcProxyCancel, server_binding_.get());
+  if (server_binding_initialized_)
+    TryExceptRpc(RpcProxyCancel, server_binding_.get());
 }
 
 Stat MtStat::*GetStatPtr(int gen) {
