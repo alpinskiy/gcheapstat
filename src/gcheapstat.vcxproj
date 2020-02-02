@@ -201,10 +201,8 @@
     <ClCompile Include="mtstat_calculator.cpp" />
     <ClCompile Include="rpc_server.cpp" />
     <ClCompile Include="runas_localsystem.cpp" />
-    <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="options.cpp" />
-    <ClCompile Include="output.cpp" />
     <ClCompile Include="process_info.cpp" />
     <ClCompile Include="rpc_c.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -258,7 +256,6 @@
     <ClInclude Include="logger.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="process_info.h" />
-    <ClInclude Include="output.h" />
     <ClInclude Include="rpc_h.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

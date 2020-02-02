@@ -24,8 +24,7 @@ void ApplicationProxy::Cancel() {
 }
 
 Application::Application()
-    : logger_registration_{RegisterLoggerOutput(this)},
-      context_kind_{ContextKind::None},
+    : context_kind_{ContextKind::None},
       ServerPid{-1},
       RpcInitialized{false},
       proxy_{this} {}
@@ -149,8 +148,6 @@ DWORD Application::ExchangePid(DWORD pid) {
   ServerPid.store(pid);
   return GetCurrentProcessId();
 }
-
-void Application::Print(PCWSTR str) { fwprintf(stderr, str); }
 
 void Application::Cancel() {
   if (RpcInitialized) TryExceptRpc(RpcProxyCancel, server_binding_.get());

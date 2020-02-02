@@ -1,7 +1,6 @@
 #include "rpc_server.h"
 
 #include "mtstat_calculator.h"
-#include "rpc_helpers.h"
 
 HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid, PSIZE_T size) {
   size_t ret = 0;
@@ -48,18 +47,16 @@ HRESULT RpcServer::Run(PWSTR pipename) {
       FAILED(hr = RpcInitializeServer(server_pipename,
                                       RpcStubServer_v0_0_s_ifspec));
   if (fail) return hr;
-  wil::unique_rpc_binding application_binding;
-  hr = RpcInitializeClient(pipename, &application_binding);
+  hr = RpcInitializeClient(pipename, &application_binding_);
   if (FAILED(hr)) return hr;
+  RpcServerProxy proxy{this};
   DWORD pid = 0;
-  hr = TryExceptRpc(pid, &RpcProxyExchangePid, application_binding.get(),
+  hr = TryExceptRpc(pid, &RpcProxyExchangePid, application_binding_.get(),
                     GetCurrentProcessId());
   if (FAILED(hr)) return hr;
   wil::unique_process_handle application_process{
       OpenProcess(SYNCHRONIZE, FALSE, pid)};
   if (!application_process) return HRESULT_FROM_WIN32(GetLastError());
-  RpcOutput output{application_binding.get()};
-  auto logger = RegisterLoggerOutput(&output);
   auto waitres = WaitForSingleObject(application_process.get(), INFINITE);
   return (waitres == WAIT_OBJECT_0) ? S_OK : HRESULT_FROM_WIN32(GetLastError());
 }
@@ -92,8 +89,4 @@ HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {
   auto hr = process_context_.GetMtName(addr, buffer_size_, buffer_, &needed);
   if (SUCCEEDED(hr)) *name = _bstr_t{buffer_}.Detach();
   return hr;
-}
-
-void RpcOutput::Print(PCWSTR str) {
-  TryExceptRpc(&RpcProxyLogError, handle_, _bstr_t{str}.GetBSTR());
 }

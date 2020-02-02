@@ -16,7 +16,7 @@ class ApplicationProxy : Proxy<Application> {
   static void Cancel();
 };
 
-class Application : IMtNameResolver, IOutput {
+class Application : IMtNameResolver {
  public:
   Application();
   HRESULT Run(Options &options);
@@ -29,11 +29,9 @@ class Application : IMtNameResolver, IOutput {
   HRESULT ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT RunServerAsLocalSystem();
   DWORD ExchangePid(DWORD pid);
-  void Print(PCWSTR str);
   void Cancel();
 
   enum class ContextKind { None, Local, Remote };
-  LoggerRegistration logger_registration_;
   ConsoleCtrlHandler console_ctrl_handler_;
   ContextKind context_kind_;
   ProcessContext process_context_;

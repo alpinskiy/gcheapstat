@@ -3,13 +3,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="output.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="rpc_c.c" />
     <ClCompile Include="rpc_s.c" />
     <ClCompile Include="process_info.cpp" />
     <ClCompile Include="cancellation.cpp" />
-    <ClCompile Include="logger.cpp" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="rpc_helpers.cpp" />
     <ClCompile Include="runas_localsystem.cpp" />
@@ -21,7 +19,6 @@
     <ClCompile Include="console_ctrl_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="output.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="cancellation.h" />

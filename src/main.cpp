@@ -2,6 +2,7 @@
 #include "options.h"
 #include "rpc_server.h"
 
+bool RpcServerMode;
 wchar_t Buffer[64 * 1024];
 
 int main() {
@@ -11,6 +12,7 @@ int main() {
     return 1;
   }
   if (options.pipename) {
+    RpcServerMode = true;
     auto hr = RpcServer{Buffer}.Run(options.pipename);
     return FAILED(hr) ? 1 : 0;
   }
