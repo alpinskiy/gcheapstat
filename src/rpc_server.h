@@ -6,9 +6,9 @@
 
 class RpcServer {
  public:
-  template <size_t N>
-  RpcServer(wchar_t (&buffer)[N])
-      : buffer_{buffer}, buffer_size_{N}, application_binding_{nullptr} {}
+  template <size_t BufferSize>
+  RpcServer(wchar_t (&buffer)[BufferSize])
+      : buffer_{buffer}, buffer_size_{BufferSize} {}
   HRESULT Run(PWSTR pipename);
 
  private:
