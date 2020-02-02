@@ -1,6 +1,6 @@
 #pragma once
 
-class ConsoleCtrlHandler {
+class ConsoleCtrlHandler final {
  public:
   explicit ConsoleCtrlHandler() {
     SetConsoleCtrlHandler(ConsoleCtrlHandler::Invoke, TRUE);

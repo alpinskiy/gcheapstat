@@ -1,7 +1,7 @@
 #pragma once
 #include <sospriv.h>
 
-struct ProcessContext {
+struct ProcessContext final {
   HRESULT Initialize(DWORD pid);
   HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
                     uint32_t *needed);

@@ -1,7 +1,7 @@
 #pragma once
 #include <clrdata.h>
 
-struct ProcessInfo {
+struct ProcessInfo final {
   HRESULT Initialize(HANDLE hprocess);
 
   wchar_t clrname[MAX_PATH];

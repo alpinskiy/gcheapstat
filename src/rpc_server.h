@@ -4,7 +4,7 @@
 #include "rpc_h.h"
 #include "rpc_helpers.h"
 
-class RpcServer {
+class RpcServer final {
  public:
   template <uint32_t BufferSize>
   RpcServer(wchar_t (&buffer)[BufferSize])

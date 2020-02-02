@@ -1,6 +1,6 @@
 #pragma once
 
-class AsLocalSystem {
+class AsLocalSystem final {
  public:
   AsLocalSystem();
   ~AsLocalSystem();

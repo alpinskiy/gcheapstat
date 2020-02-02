@@ -15,7 +15,7 @@ auto constexpr kMinObjectSize = sizeof(uintptr_t) +  // Method table address
 
 static_assert(DAC_NUMBERGENERATIONS == 4, "4 generations expected!");
 
-class MtStatCalculator {
+class MtStatCalculator final {
  public:
   MtStatCalculator();
   HRESULT Initialize(HANDLE hprocess, ISOSDacInterface* sos_dac_interface);

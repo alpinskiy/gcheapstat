@@ -6,7 +6,7 @@
 #include "process_context.h"
 #include "rpc_h.h"
 
-class Application : IMtNameResolver {
+class Application final : IMtNameResolver {
  public:
   Application();
   HRESULT Run(Options &options);
@@ -35,7 +35,7 @@ class Application : IMtNameResolver {
 Stat MtStat::*GetStatPtr(int gen);
 
 template <class T, template <class> class C>
-struct MtStatComparer {
+struct MtStatComparer final {
   explicit MtStatComparer(OrderBy orderby, int gen)
       : ptr{GetStatPtr(gen)},
         ptr2{orderby == OrderBy::Count ? &Stat::count : &Stat::size_total} {

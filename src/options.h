@@ -3,7 +3,7 @@
 enum class Order { Asc, Desc };
 enum class OrderBy { TotalSize, Count };
 
-struct Options {
+struct Options final {
   DWORD pid{0};
   PWSTR pipename;
   Order order{Order::Asc};

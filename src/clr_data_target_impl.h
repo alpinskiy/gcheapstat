@@ -2,7 +2,7 @@
 #include "process_info.h"
 #include "xclrdata.h"
 
-class ClrDataTargetImpl : public IXCLRDataTarget3 {
+class ClrDataTargetImpl final : public IXCLRDataTarget3 {
  public:
   ClrDataTargetImpl(HANDLE process, ProcessInfo *procinfo);
 
