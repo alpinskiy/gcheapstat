@@ -9,7 +9,7 @@ DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
   return ApplicationProxy::ExchangePid(pid);
 }
 
-void RpcStubLogError(handle_t handle, BSTR message) { LogError(message); }
+void RpcStubLogError(handle_t handle, BSTR message) { wprintf(message); }
 
 HRESULT Application::Run(Options &options) {
   Output output;

@@ -23,7 +23,16 @@ int main() {
   }
   auto hr = Application{}.Run(options);
   if (FAILED(hr)) {
-    LogError(hr);
+    static wchar_t Buffer[64 * 1024]{};
+    auto len = FormatMessageW(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, hr,
+        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), Buffer,
+        _ARRAYSIZE(Buffer), NULL);
+    if (len) {
+      wprintf(Buffer);
+      wprintf(L"\n");
+    } else
+      printf("Error 0x%08lx\n", hr);
     return 1;
   }
   return 0;

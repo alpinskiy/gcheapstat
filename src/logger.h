@@ -5,7 +5,6 @@ class Logger {
   void RegisterOutput(IOutput* output);
   void UnregisterOutput(IOutput* output);
   void Print(PCWSTR str);
-  void PrintError(HRESULT hr);
 
   template <class... Args>
   void Printf(PCWSTR format, Args&&... args) {
@@ -21,7 +20,6 @@ class Logger {
   friend class LoggerRegistration;
   template <class... Args>
   friend void LogError(PCWSTR format, Args&&... args);
-  friend void LogError(HRESULT hr);
 };
 
 class LoggerRegistration {
@@ -48,5 +46,3 @@ template <class... Args>
 inline void LogError(PCWSTR format, Args&&... args) {
   TheLogger.Printf(format, std::forward<Args>(args)...);
 }
-
-inline void LogError(HRESULT hr) { TheLogger.PrintError(hr); }
