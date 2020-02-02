@@ -13,7 +13,7 @@ class RpcServer {
 
  private:
   HRESULT CalculateMtStat(DWORD pid, size_t *size);
-  boolean GetMtStat(size_t offset, DWORD size, MtStat stat[]);
+  HRESULT GetMtStat(size_t offset, DWORD size, MtStat stat[]);
   HRESULT GetMtName(uintptr_t addr, LPBSTR name);
 
   template <typename... Args>
@@ -30,20 +30,11 @@ class RpcServer {
   wchar_t *buffer_;
   uint32_t buffer_size_;
   wil::unique_rpc_binding application_binding_;
-  friend class RpcServerProxy;
-};
-
-class RpcServerProxy : Proxy<RpcServer> {
- public:
-  explicit RpcServerProxy(RpcServer *rpc_server);
-
-  static HRESULT CalculateMtStat(DWORD pid, size_t *size);
-  static boolean GetMtStat(size_t offset, DWORD size, MtStat stat[]);
-  static HRESULT GetMtName(uintptr_t addr, LPBSTR name);
-
+  friend HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid,
+                                        PSIZE_T size);
+  friend HRESULT RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
+                                  MtStat mtstat[]);
+  friend HRESULT RpcStubGetMtName(handle_t handle, UINT_PTR addr, LPBSTR name);
   template <typename... Args>
-  static void LogError(PCWSTR format, Args &&... args) {
-    auto lock = Mutex.lock_exclusive();
-    if (Instance) Instance->LogError(format, std::forward<Args>(args)...);
-  }
+  friend void LogError(PCWSTR format, Args &&... args);
 };

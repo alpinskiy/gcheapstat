@@ -1,12 +1,21 @@
 #pragma once
 #include "rpc_server.h"
+#include "singleton_scope.h"
 
-extern bool RpcServerMode;
+enum class LoggerMode { None, Console, RpcServer };
+extern LoggerMode Mode;
 
 template <class... Args>
 void LogError(PCWSTR format, Args&&... args) {
-  if (!RpcServerMode)
-    wprintf(format, std::forward<Args>(args)...);
-  else
-    RpcServerProxy::LogError(format, std::forward<Args>(args)...);
+  switch (Mode) {
+    case LoggerMode::Console:
+      wprintf(format, std::forward<Args>(args)...);
+      break;
+    case LoggerMode::RpcServer:
+      SingletonScope<RpcServer>::Invoke(&RpcServer::LogError<Args...>, format,
+                                        std::forward<Args>(args)...);
+      break;
+    default:
+      _ASSERT(false);
+  }
 }

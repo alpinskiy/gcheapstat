@@ -8,7 +8,7 @@ BOOL ConsoleCtrlHandler::Invoke(DWORD code) {
     case CTRL_BREAK_EVENT:
     case CTRL_CLOSE_EVENT:
       Cancel();
-      ApplicationProxy::Cancel();
+      SingletonScope<Application>::Invoke(&Application::Cancel);
       return TRUE;
     default:
       return FALSE;

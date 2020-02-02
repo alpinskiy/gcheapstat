@@ -4,38 +4,23 @@
 
 HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid, PSIZE_T size) {
   size_t ret = 0;
-  auto hr = RpcServerProxy::CalculateMtStat(pid, &ret);
+  auto hr =
+      SingletonScope<RpcServer>::Invoke(&RpcServer::CalculateMtStat, pid, &ret);
   *size = ret;
   return hr;
 }
 
-boolean RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
+HRESULT RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
                          MtStat mtstat[]) {
-  return RpcServerProxy::GetMtStat(offset, size, mtstat);
+  return SingletonScope<RpcServer>::Invoke(&RpcServer::GetMtStat, offset, size,
+                                           mtstat);
 }
 
 HRESULT RpcStubGetMtName(handle_t handle, UINT_PTR addr, LPBSTR name) {
-  return RpcServerProxy::GetMtName(addr, name);
+  return SingletonScope<RpcServer>::Invoke(&RpcServer::GetMtName, addr, name);
 }
 
 void RpcStubCancel(handle_t handle) { Cancel(); }
-
-RpcServerProxy::RpcServerProxy(RpcServer *rpc_server) : Proxy{rpc_server} {}
-
-HRESULT RpcServerProxy::CalculateMtStat(DWORD pid, size_t *size) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->CalculateMtStat(pid, size) : E_POINTER;
-}
-
-boolean RpcServerProxy::GetMtStat(size_t offset, DWORD size, MtStat stat[]) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->GetMtStat(offset, size, stat) : FALSE;
-}
-
-HRESULT RpcServerProxy::GetMtName(uintptr_t addr, LPBSTR name) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->GetMtName(addr, name) : E_POINTER;
-}
 
 HRESULT RpcServer::Run(PWSTR pipename) {
   if (!pipename) return E_INVALIDARG;
@@ -49,10 +34,9 @@ HRESULT RpcServer::Run(PWSTR pipename) {
   if (fail) return hr;
   hr = RpcInitializeClient(pipename, &application_binding_);
   if (FAILED(hr)) return hr;
-  RpcServerProxy proxy{this};
-  DWORD pid = 0;
-  hr = TryExceptRpc(pid, &RpcProxyExchangePid, application_binding_.get(),
-                    GetCurrentProcessId());
+  SingletonScope<RpcServer> singleton_scope{this};
+  auto pid = GetCurrentProcessId();
+  hr = TryExceptRpc(&RpcProxyExchangePid, application_binding_.get(), &pid);
   if (FAILED(hr)) return hr;
   wil::unique_process_handle application_process{
       OpenProcess(SYNCHRONIZE, FALSE, pid)};
@@ -73,14 +57,15 @@ HRESULT RpcServer::CalculateMtStat(DWORD pid, size_t *size) {
   return hr;
 }
 
-boolean RpcServer::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
-  if (mtstat_.size() < offset || (mtstat_.size() - offset) < size) return FALSE;
+HRESULT RpcServer::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
+  if (mtstat_.size() < offset || (mtstat_.size() - offset) < size)
+    return E_INVALIDARG;
   auto first = mtstat_.cbegin();
   std::advance(first, offset);
   auto last = first;
   std::advance(last, size);
   std::copy(first, last, mtstat);
-  return TRUE;
+  return S_OK;
 }
 
 HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {

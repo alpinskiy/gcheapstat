@@ -2,7 +2,7 @@
 #include "options.h"
 #include "rpc_server.h"
 
-bool RpcServerMode;
+LoggerMode Mode{LoggerMode::None};
 wchar_t Buffer[64 * 1024];
 
 int main() {
@@ -12,7 +12,7 @@ int main() {
     return 1;
   }
   if (options.pipename) {
-    RpcServerMode = true;
+    Mode = LoggerMode::RpcServer;
     auto hr = RpcServer{Buffer}.Run(options.pipename);
     return FAILED(hr) ? 1 : 0;
   }
@@ -25,6 +25,7 @@ int main() {
       return 1;
     }
   }
+  Mode = LoggerMode::Console;
   auto hr = Application{}.Run(options);
   if (FAILED(hr)) {
     auto len = FormatMessageW(

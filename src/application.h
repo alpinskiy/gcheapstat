@@ -18,7 +18,7 @@ class Application : IMtNameResolver {
   // Effectively runs RpcServer::CalculateMtStat under LocalSystem account
   HRESULT ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT RunServerAsLocalSystem();
-  DWORD ExchangePid(DWORD pid);
+  HRESULT ExchangePid(PDWORD pid);
   void Cancel();
 
   enum class ContextKind { None, Local, Remote };
@@ -28,15 +28,8 @@ class Application : IMtNameResolver {
   std::atomic<DWORD> server_pid_;
   wil::unique_rpc_binding server_binding_;
   std::atomic_bool server_binding_initialized_;
-  friend class ApplicationProxy;
-};
-
-class ApplicationProxy : Proxy<Application> {
- public:
-  explicit ApplicationProxy(Application *ptr);
-
-  static DWORD ExchangePid(DWORD pid);
-  static void Cancel();
+  friend HRESULT RpcStubExchangePid(handle_t handle, PDWORD pid);
+  friend class ConsoleCtrlHandler;
 };
 
 Stat MtStat::*GetStatPtr(int gen);

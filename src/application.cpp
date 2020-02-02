@@ -4,24 +4,13 @@
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 #include "runas_localsystem.h"
+#include "singleton_scope.h"
 
-DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
-  return ApplicationProxy::ExchangePid(pid);
+HRESULT RpcStubExchangePid(handle_t handle, PDWORD pid) {
+  return SingletonScope<Application>::Invoke(&Application::ExchangePid, pid);
 }
 
 void RpcStubLogError(handle_t handle, BSTR message) { wprintf(message); }
-
-ApplicationProxy::ApplicationProxy(Application *ptr) : Proxy{ptr} {}
-
-DWORD ApplicationProxy::ExchangePid(DWORD pid) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->ExchangePid(pid) : -1;
-}
-
-void ApplicationProxy::Cancel() {
-  auto lock = Mutex.lock_exclusive();
-  if (Instance) Instance->Cancel();
-}
 
 Application::Application()
     : context_kind_{ContextKind::None},
@@ -29,7 +18,7 @@ Application::Application()
       server_binding_initialized_{false} {}
 
 HRESULT Application::Run(Options &options) {
-  ApplicationProxy proxy{this};
+  SingletonScope<Application> singleton_scope{this};
   // Calculate
   std::vector<MtStat> items;
   auto hr = CalculateMtStat(options.pid, items);
@@ -97,10 +86,9 @@ HRESULT Application::ServerCalculateMtStat(DWORD pid,
   SIZE_T size32max = (std::numeric_limits<DWORD>::max)();
   for (SIZE_T offset = 0; offset < size; offset += size32) {
     size32 = static_cast<UINT>((std::min)(size - offset, size32max));
-    boolean ok = FALSE;
-    hr = TryExceptRpc(ok, &RpcProxyGetMtStat, server_binding_.get(), offset,
-                      size32, &mtstat[0] + offset);
-    if (!ok) return FAILED(hr) ? hr : E_UNEXPECTED;
+    hr = TryExceptRpc(&RpcProxyGetMtStat, server_binding_.get(), offset, size32,
+                      &mtstat[0] + offset);
+    if (FAILED(hr)) return hr;
   }
   return S_OK;
 }
@@ -144,9 +132,10 @@ HRESULT Application::RunServerAsLocalSystem() {
   return hr;
 }
 
-DWORD Application::ExchangePid(DWORD pid) {
-  server_pid_.store(pid);
-  return GetCurrentProcessId();
+HRESULT Application::ExchangePid(PDWORD pid) {
+  server_pid_.store(*pid);
+  *pid = GetCurrentProcessId();
+  return S_OK;
 }
 
 void Application::Cancel() {
