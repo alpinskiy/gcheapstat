@@ -11,11 +11,26 @@ DWORD RpcStubExchangePid(handle_t handle, DWORD pid) {
 
 void RpcStubLogError(handle_t handle, BSTR message) { wprintf(message); }
 
+ApplicationProxy::ApplicationProxy(Application *ptr) : Proxy{ptr} {}
+
+DWORD ApplicationProxy::ExchangePid(DWORD pid) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->ExchangePid(pid) : -1;
+}
+
+void ApplicationProxy::Cancel() {
+  auto lock = Mutex.lock_exclusive();
+  if (Instance) Instance->Cancel();
+}
+
+Application::Application()
+    : logger_registration_{RegisterLoggerOutput(this)},
+      context_kind_{ContextKind::None},
+      ServerPid{-1},
+      RpcInitialized{false},
+      proxy_{this} {}
+
 HRESULT Application::Run(Options &options) {
-  ConsoleOutput output;
-  auto logger = RegisterLoggerOutput(&output);
-  ConsoleCancellationHandler cancellation_handler;
-  ApplicationProxy proxy{this};
   // Calculate
   std::vector<MtStat> items;
   auto hr = CalculateMtStat(options.pid, items);
@@ -27,41 +42,8 @@ HRESULT Application::Run(Options &options) {
   auto first = items.begin();
   auto last = first;
   std::advance(last, (std::min)(items.size(), options.limit));
-  PrintWinDbgFormat(first, last, GetStatPtr(options.gen));
+  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), this);
   return S_OK;
-}
-
-void Application::PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
-                                    Stat MtStat::*ptr) {
-#ifdef _WIN64
-  constexpr auto kHeader =
-      "              MT    Count    TotalSize Class Name\n";
-  constexpr auto kRowFormat = L"%016" PRIx64 "%9" PRIu64 "%13" PRIu64 " ";
-#else
-  constexpr auto kHeader = "      MT    Count    TotalSize Class Name\n";
-  constexpr auto kRowFormat = L"%08" PRIx32 "%9" PRIu32 "%13" PRIu32 " ";
-#endif
-  printf(kHeader);
-  wchar_t buffer[1024];
-  size_t total_count = 0;
-  size_t total_size = 0;
-  for (auto it = first; it != last; ++it) {
-    if (IsCancelled()) return;
-    auto count = (*it.*ptr).count;
-    auto size = (*it.*ptr).size_total;
-    if (!count && !size) continue;
-    wprintf(kRowFormat, it->addr, count, size);
-    uint32_t needed;
-    auto hr = GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
-    if (SUCCEEDED(hr))
-      wprintf(L"%s\n", buffer);
-    else
-      wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
-    total_count += count;
-    total_size += size;
-  }
-  printf("Total %" PRIuPTR " objects\n", total_count);
-  printf("Total size %" PRIuPTR " bytes\n", total_size);
 }
 
 HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
@@ -168,24 +150,11 @@ DWORD Application::ExchangePid(DWORD pid) {
   return GetCurrentProcessId();
 }
 
+void Application::Print(PCWSTR str) { fwprintf(stderr, str); }
+
 void Application::Cancel() {
   if (RpcInitialized) TryExceptRpc(RpcProxyCancel, server_binding_.get());
 }
-
-ApplicationProxy::ApplicationProxy(Application *application)
-    : Proxy{application} {}
-
-DWORD ApplicationProxy::ExchangePid(DWORD pid) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->ExchangePid(pid) : -1;
-}
-
-void ApplicationProxy::Cancel() {
-  auto lock = Mutex.lock_exclusive();
-  if (Instance) Instance->Cancel();
-}
-
-void ConsoleOutput::Print(PCWSTR str) { fwprintf(stderr, str); }
 
 Stat MtStat::*GetStatPtr(int gen) {
   _ASSERT(-1 <= gen && gen <= 3);

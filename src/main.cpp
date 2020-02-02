@@ -32,7 +32,7 @@ int main() {
       wprintf(Buffer);
       wprintf(L"\n");
     } else
-      printf("Error 0x%08lx\n", hr);
+      wprintf(L"Error 0x%08lx\n", hr);
     return 1;
   }
   return 0;

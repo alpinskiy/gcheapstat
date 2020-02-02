@@ -194,6 +194,7 @@
     <ClCompile Include="application.cpp" />
     <ClCompile Include="clr_data_access.cpp" />
     <ClCompile Include="clr_data_target_impl.cpp" />
+    <ClCompile Include="console_ctrl_handler.cpp" />
     <ClCompile Include="process_context.cpp" />
     <ClCompile Include="rpc_helpers.cpp" />
     <ClCompile Include="cancellation.cpp" />
@@ -245,6 +246,8 @@
     <ClInclude Include="clr_data_access.h" />
     <ClInclude Include="clr_data_target_impl.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="console_ctrl_handler.h" />
+    <ClInclude Include="mtstat_printer.h" />
     <ClInclude Include="process_context.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rpc_helpers.h" />

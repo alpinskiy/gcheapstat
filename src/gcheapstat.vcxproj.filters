@@ -18,6 +18,7 @@
     <ClCompile Include="clr_data_target_impl.cpp" />
     <ClCompile Include="process_context.cpp" />
     <ClCompile Include="rpc_server.cpp" />
+    <ClCompile Include="console_ctrl_handler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="output.h" />
@@ -37,6 +38,8 @@
     <ClInclude Include="rpc_server.h" />
     <ClInclude Include="process_context.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="mtstat_printer.h" />
+    <ClInclude Include="console_ctrl_handler.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="rpc.idl" />

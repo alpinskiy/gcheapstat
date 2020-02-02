@@ -1,17 +1,27 @@
 #pragma once
 #include "common.h"
+#include "console_ctrl_handler.h"
+#include "mtstat_printer.h"
 #include "options.h"
 #include "process_context.h"
 #include "rpc_h.h"
 
-class Application {
+class Application;
+
+class ApplicationProxy : Proxy<Application> {
  public:
+  explicit ApplicationProxy(Application *ptr);
+
+  static DWORD ExchangePid(DWORD pid);
+  static void Cancel();
+};
+
+class Application : IMtNameResolver, IOutput {
+ public:
+  Application();
   HRESULT Run(Options &options);
 
  private:
-  using mtstat_iterator = std::vector<MtStat>::iterator;
-  void PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
-                         Stat MtStat::*ptr);
   HRESULT CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
                     uint32_t *needed);
@@ -19,52 +29,19 @@ class Application {
   HRESULT ServerCalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
   HRESULT RunServerAsLocalSystem();
   DWORD ExchangePid(DWORD pid);
+  void Print(PCWSTR str);
   void Cancel();
 
   enum class ContextKind { None, Local, Remote };
-  ContextKind context_kind_{ContextKind::None};
+  LoggerRegistration logger_registration_;
+  ConsoleCtrlHandler console_ctrl_handler_;
+  ContextKind context_kind_;
   ProcessContext process_context_;
   wil::unique_rpc_binding server_binding_;
   std::atomic<DWORD> ServerPid;
   std::atomic_bool RpcInitialized;
+  ApplicationProxy proxy_;
   friend class ApplicationProxy;
-};
-
-class ApplicationProxy : Proxy<Application> {
- public:
-  explicit ApplicationProxy(Application *application);
-
-  static DWORD ExchangePid(DWORD pid);
-  static void Cancel();
-};
-
-class ConsoleCancellationHandler {
- public:
-  explicit inline ConsoleCancellationHandler() {
-    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, TRUE);
-  }
-  inline ~ConsoleCancellationHandler() {
-    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, FALSE);
-    if (IsCancelled()) printf("Operation cancelled by user\n");
-  }
-
- private:
-  static BOOL WINAPI Invoke(DWORD code) {
-    switch (code) {
-      case CTRL_C_EVENT:
-      case CTRL_BREAK_EVENT:
-      case CTRL_CLOSE_EVENT:
-        Cancel();
-        ApplicationProxy::Cancel();
-        return TRUE;
-      default:
-        return FALSE;
-    }
-  }
-};
-
-struct ConsoleOutput : IOutput {
-  void Print(PCWSTR str) override;
 };
 
 Stat MtStat::*GetStatPtr(int gen);
