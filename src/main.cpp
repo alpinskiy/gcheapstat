@@ -2,6 +2,8 @@
 #include "options.h"
 #include "rpc_server.h"
 
+wchar_t Buffer[64 * 1024];
+
 int main() {
   Options options{};
   if (!options.ParseCommandLine(GetCommandLineW())) {
@@ -9,7 +11,7 @@ int main() {
     return 1;
   }
   if (options.pipename) {
-    auto hr = RpcServer{}.Run(options.pipename);
+    auto hr = RpcServer{Buffer}.Run(options.pipename);
     return FAILED(hr) ? 1 : 0;
   }
   if (!options.pid) {
@@ -23,7 +25,6 @@ int main() {
   }
   auto hr = Application{}.Run(options);
   if (FAILED(hr)) {
-    static wchar_t Buffer[64 * 1024]{};
     auto len = FormatMessageW(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, hr,
         MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), Buffer,

@@ -21,9 +21,25 @@ HRESULT RpcStubGetMtName(handle_t handle, UINT_PTR addr, LPBSTR name) {
 
 void RpcStubCancel(handle_t handle) { Cancel(); }
 
+RpcServerProxy::RpcServerProxy(RpcServer *rpc_server) : Proxy{rpc_server} {}
+
+HRESULT RpcServerProxy::CalculateMtStat(DWORD pid, size_t *size) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->CalculateMtStat(pid, size) : E_POINTER;
+}
+
+boolean RpcServerProxy::GetMtStat(size_t offset, DWORD size, MtStat stat[]) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->GetMtStat(offset, size, stat) : FALSE;
+}
+
+HRESULT RpcServerProxy::GetMtName(uintptr_t addr, LPBSTR name) {
+  auto lock = Mutex.lock_exclusive();
+  return Instance ? Instance->GetMtName(addr, name) : E_POINTER;
+}
+
 HRESULT RpcServer::Run(PWSTR pipename) {
   if (!pipename) return E_INVALIDARG;
-  RpcServerProxy proxy{this};
   HRESULT hr;
   wchar_t server_pipename[MAX_PATH];
   auto fail =
@@ -73,27 +89,9 @@ boolean RpcServer::GetMtStat(size_t offset, DWORD size, MtStat mtstat[]) {
 HRESULT RpcServer::GetMtName(uintptr_t addr, LPBSTR name) {
   if (!name) return E_INVALIDARG;
   UINT needed = 0;
-  auto hr =
-      process_context_.GetMtName(addr, ARRAYSIZE(buffer_), buffer_, &needed);
+  auto hr = process_context_.GetMtName(addr, buffer_size_, buffer_, &needed);
   if (SUCCEEDED(hr)) *name = _bstr_t{buffer_}.Detach();
   return hr;
-}
-
-RpcServerProxy::RpcServerProxy(RpcServer *rpc_server) : Proxy{rpc_server} {}
-
-HRESULT RpcServerProxy::CalculateMtStat(DWORD pid, size_t *size) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->CalculateMtStat(pid, size) : E_POINTER;
-}
-
-boolean RpcServerProxy::GetMtStat(size_t offset, DWORD size, MtStat stat[]) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->GetMtStat(offset, size, stat) : FALSE;
-}
-
-HRESULT RpcServerProxy::GetMtName(uintptr_t addr, LPBSTR name) {
-  auto lock = Mutex.lock_exclusive();
-  return Instance ? Instance->GetMtName(addr, name) : E_POINTER;
 }
 
 void RpcOutput::Print(PCWSTR str) {
