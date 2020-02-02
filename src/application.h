@@ -38,35 +38,6 @@ class ApplicationProxy : Proxy<Application> {
   static void Cancel();
 };
 
-class ConsoleCancellationHandler {
- public:
-  explicit inline ConsoleCancellationHandler() {
-    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, TRUE);
-  }
-  inline ~ConsoleCancellationHandler() {
-    SetConsoleCtrlHandler(ConsoleCancellationHandler::Invoke, FALSE);
-    if (IsCancelled()) printf("Operation cancelled by user\n");
-  }
-
- private:
-  static BOOL WINAPI Invoke(DWORD code) {
-    switch (code) {
-      case CTRL_C_EVENT:
-      case CTRL_BREAK_EVENT:
-      case CTRL_CLOSE_EVENT:
-        Cancel();
-        ApplicationProxy::Cancel();
-        return TRUE;
-      default:
-        return FALSE;
-    }
-  }
-};
-
-struct StdErrorOutput : IOutput {
-  void Print(PCWSTR str) override;
-};
-
 Stat MtStat::*GetStatPtr(int gen);
 
 template <class T, template <class> class C>

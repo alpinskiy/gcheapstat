@@ -12,7 +12,7 @@ class Proxy {
     Instance = ptr;
   }
   ~Proxy() {
-    // Not virtual intentionally, derived class should not have destructor
+    // Not virtual intentionally
     auto lock = Mutex.lock_exclusive();
     Instance = nullptr;
   }

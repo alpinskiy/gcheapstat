@@ -1,6 +1,7 @@
 #pragma once
 
 struct IOutput {
+  // No virtual destructor intentionally
   virtual void Print(PCWSTR str) = 0;
 };
 
