@@ -1,7 +1,7 @@
 #pragma once
 #include "rpc_h.h"  // MtStat
 
-struct IMtNameResolver {
+struct IMtNameProvider {
   // No virtual destructor intentionally
   virtual HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
                             uint32_t *needed) = 0;
@@ -9,7 +9,7 @@ struct IMtNameResolver {
 
 template <typename T>
 void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
-                       IMtNameResolver *resolver) {
+                       IMtNameProvider *resolver) {
 #ifdef _WIN64
   constexpr auto kHeader =
       "              MT    Count    TotalSize Class Name\n";
