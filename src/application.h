@@ -6,7 +6,7 @@
 #include "process_context.h"
 #include "rpc_h.h"
 
-class Application final : IMtNameResolver {
+class Application final : IMtNameProvider {
  public:
   Application();
   HRESULT Run(Options &options);
