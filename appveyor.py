@@ -66,3 +66,4 @@ if __name__ == '__main__':
   zipname = 'gcheapstat' + tag + 'pdb.zip';
   zip_symbols(zipname, 'x86', 'Release')
   zip_symbols(zipname, 'x64', 'Release')
+  push_artifact(zipname)
