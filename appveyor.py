@@ -23,7 +23,7 @@ def dumpbin(path):
     r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\bin\Hostx86\x86\dumpbin.exe',
     path, '/headers'], stdout=subprocess.PIPE)
   for line in iter(proc.stdout.readline, ''):
-    match = formatRe.search(line)
+    match = formatRe.search(line.rstrip())
     if match:
       groups = match.groups()
       guid = groups[0].replace('-', '')
