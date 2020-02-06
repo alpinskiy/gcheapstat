@@ -120,11 +120,10 @@ HRESULT Application::RunServerAsLocalSystem() {
       FAILED(hr = RunAsLocalSystem(cmdline));
   if (fail) return hr;
   // Wait for the spawned process connect
-  // TODO: It is wrong to spin until non zero PID received
-  // because ExchangePid might be called with zero value
   DWORD server_pid;
   for (; !(server_pid = server_pid_.load()); Sleep(1))
     if (IsCancelled()) return S_FALSE;
+  if (server_pid == -1) return E_INVALIDARG;
   // Connect back
   hr = StringCchPrintfW(pipename, ARRAYSIZE(pipename), kPipeNameFormat,
                         server_pid);
@@ -136,7 +135,11 @@ HRESULT Application::RunServerAsLocalSystem() {
 }
 
 HRESULT Application::ExchangePid(PDWORD pid) {
-  server_pid_.store(*pid);
+  // RunServerAsLocalSystem is blocked until non zero server_pid_ value received
+  // Defend against error here by replacing 0 with -1 (both are invalid PIDs)
+  auto server_pid = *pid;
+  if (!server_pid) server_pid = -1;
+  server_pid_.store(server_pid);
   *pid = GetCurrentProcessId();
   return S_OK;
 }
