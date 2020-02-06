@@ -27,7 +27,7 @@ def dumpbin(path):
     if match:
       groups = match.groups()
       guid = groups[0].replace('-', '')
-      age = groups[1]
+      age = int(groups[1])
       return guid, age
 
 def zip_pdb(zipf, path, name):
