@@ -19,7 +19,9 @@ def zip_binary(zipname, platform, configuration):
 
 formatRe = re.compile(r'Format: RSDS, {([0-9a-fA-F\-]+)},\s*(\d+)')
 def dumpbin(path):
-  proc = subprocess.Popen(['dumpbin ', path, '/headers'])
+  proc = subprocess.Popen([
+    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\bin\Hostx86\x86\dumpbin.exe',
+    path, '/headers'])
   for line in iter(proc.stdout.readline, ''):
     match = formatRe.search(line)
     if match:
