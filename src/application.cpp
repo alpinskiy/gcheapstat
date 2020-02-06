@@ -135,8 +135,8 @@ HRESULT Application::RunServerAsLocalSystem() {
 }
 
 HRESULT Application::ExchangePid(PDWORD pid) {
-  // RunServerAsLocalSystem is blocked until non zero server_pid_ value received
-  // Defend against error here by replacing 0 with -1 (both are invalid PIDs)
+  // RunServerAsLocalSystem is blocked until non zero server_pid_ received
+  // Defend against error by replacing 0 with -1 (both are invalid PIDs)
   auto server_pid = *pid;
   if (!server_pid) server_pid = -1;
   server_pid_.store(server_pid);
