@@ -18,7 +18,7 @@ def zip_binary(zipname, platform, configuration):
   return zipname
 
 formatRe = re.compile(r'Format: RSDS, {([0-9a-fA-F\-]+)},\s*(\d+)')
-def dumpbin(path)
+def dumpbin(path):
   proc = subprocess.Popen(['dumpbin ', path, '/headers'])
   for line in iter(proc.stdout.readline, ''):
     match = formatRe.search(line)
@@ -28,12 +28,12 @@ def dumpbin(path)
       age = groups[1]
       return guid, age
 
-def zip_pdb(zipf, path, name)
+def zip_pdb(zipf, path, name):
   guid, age = dumpbin(os.path.join(path, name + '.exe'))
   pdbName = name + '.pdb'
   zipf.write(os.path.join(path, pdbName), r'%s\%s%x\%s' % (pdbName, guid, age, pdbName))
 
-def zip_symbols(zipname, platform, configuration)
+def zip_symbols(zipname, platform, configuration):
   zipf = zipfile.ZipFile(zipname, 'a', zipfile.ZIP_DEFLATED)
   path = os.path.join('out', platform, configuration)
   zip_pdb(zipf, path, 'gcheapstat')
