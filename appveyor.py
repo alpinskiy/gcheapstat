@@ -30,8 +30,8 @@ def dumpbin(path):
 
 def zip_pdb(zipf, path, name):
   guid, age = dumpbin(os.path.join(path, name + '.exe'))
-  pdbName = name + '.pdb'
-  zipf.write(os.path.join(path, pdbName), r'%s\%s%x\%s' % (pdbName, guid, age, pdbName))
+  pdb_name = name + '.pdb'
+  zipf.write(os.path.join(path, pdb_name), r'%s\%s%x\%s' % (pdb_name, guid, age, pdb_name))
 
 def zip_symbols(zipname, platform, configuration):
   zipf = zipfile.ZipFile(zipname, 'a', zipfile.ZIP_DEFLATED)

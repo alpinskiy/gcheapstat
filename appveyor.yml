@@ -1,3 +1,5 @@
 image: Visual Studio 2019
 install: git submodule update --init --recursive
-build_script: appveyor.py
+build_script:
+  - call 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\vcvarsall.bat'
+  - appveyor.py
