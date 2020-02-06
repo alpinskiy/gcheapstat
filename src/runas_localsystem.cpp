@@ -6,7 +6,29 @@ AsLocalSystem::AsLocalSystem()
 AsLocalSystem::~AsLocalSystem() { Terminate(); }
 
 HRESULT AsLocalSystem::Initialize() {
-  auto hr = ExtractServiceToDisk();
+  auto len =
+      GetModuleFileNameW(nullptr, service_path_, ARRAYSIZE(service_path_));
+  if (len == 0 || len == ARRAYSIZE(service_path_)) {
+    service_path_[0] = 0;
+    return ERROR_INSUFFICIENT_BUFFER;
+  }
+  HRESULT hr;
+  auto fail =
+      FAILED(hr = StringCchPrintfW(service_name_, ARRAYSIZE(service_name_),
+                                   L"gcheapstatsvc%" PRIu32,
+                                   GetCurrentProcessId())) ||
+      FAILED(hr = PathCchRemoveFileSpec(service_path_,
+                                        ARRAYSIZE(service_path_))) ||
+      FAILED(hr = PathCchCombine(service_path_, ARRAYSIZE(service_path_),
+                                 service_path_, service_name_)) ||
+      FAILED(hr = PathCchRenameExtension(service_path_,
+                                         ARRAYSIZE(service_path_), L"exe"));
+  if (fail) {
+    service_name_[0] = 0;
+    service_path_[0] = 0;
+    return hr;
+  }
+  hr = ExtractServiceToDisk();
   if (FAILED(hr)) return hr;
   hr = InstallService();
   return hr;
@@ -54,15 +76,6 @@ HRESULT AsLocalSystem::ExtractServiceToDisk() {
   auto rch = LoadResource(NULL, rc);
   if (!rch) return HRESULT_FROM_WIN32(GetLastError());
   // Create file
-  if (!service_path_[0]) {
-    auto hr = StringCchPrintfW(service_path_, ARRAYSIZE(service_path_),
-                               L"gcheapstatsvc%" PRIu32 ".exe",
-                               GetCurrentProcessId());
-    if (FAILED(hr)) {
-      service_path_[0] = 0;
-      return hr;
-    }
-  }
   wil::unique_hfile file{CreateFileW(service_path_, GENERIC_WRITE, 0, nullptr,
                                      CREATE_NEW, FILE_ATTRIBUTE_HIDDEN,
                                      nullptr)};
@@ -97,10 +110,6 @@ HRESULT AsLocalSystem::InstallService() {
         OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS));
     if (!service_control_manager_) return HRESULT_FROM_WIN32(GetLastError());
   }
-  auto hr = StringCchCopyW(service_name_, ARRAYSIZE(service_name_),
-                           PathFindFileNameW(service_path_));
-  if (FAILED(hr)) return hr;
-  PathRemoveExtensionW(service_name_);
   service_.reset(CreateServiceW(
       service_control_manager_.get(), service_name_, service_name_,
       SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS, SERVICE_DEMAND_START,

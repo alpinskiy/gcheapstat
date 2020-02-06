@@ -35,8 +35,9 @@ HRESULT Application::Run(Options &options) {
 }
 
 HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
+  HRESULT hr;
   ProcessContext process_context;
-  auto hr = process_context.Initialize(pid);
+  hr = process_context.Initialize(pid);
   if (SUCCEEDED(hr)) {
     hr = ::CalculateMtStat(process_context.process_handle.get(),
                            process_context.sos_dac_interface.get(), mtstat);
@@ -113,10 +114,10 @@ HRESULT Application::RunServerAsLocalSystem() {
   }
   filepath[length] = 0;
   wchar_t cmdline[MAX_PATH];
-  fail = FAILED(hr = StringCchPrintfW(cmdline, ARRAYSIZE(cmdline),
-                                      L"\"%s\" --pipe \"%s\"", filepath,
-                                      pipename)) ||
-         FAILED(hr = RunAsLocalSystem(cmdline));
+  fail =
+      FAILED(hr = StringCchPrintfW(cmdline, ARRAYSIZE(cmdline),
+                                   L"\"%s\" --pipe=%s", filepath, pipename)) ||
+      FAILED(hr = RunAsLocalSystem(cmdline));
   if (fail) return hr;
   // Wait for the spawned process connect
   // TODO: It is wrong to spin until non zero PID received
