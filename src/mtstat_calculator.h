@@ -86,15 +86,17 @@ class MtStatCalculator final {
           mem, ptr, (std::min)(allocation_context->ptr, allocated) - mem, heap,
           gen);
       if (allocated < allocation_context->limit) {
-        LogError(L"Allocation context limit goes beyond segment boundary\n");
+        LogError(L"Allocation context limit goes %" PRIuPTR
+                 " bytes beyond segment boundary\n",
+                 allocation_context->limit - allocated);
         return;
       }
       auto limit =
           allocation_context->limit + Align<kAlignment>(kMinObjectSize);
       if (allocated < limit) {
-        LogError(
-            L"Aligned allocation context limit goes beyond segment "
-            L"boundary\n");
+        LogError(L"Aligned allocation context limit goes %" PRIuPTR
+                 " bytes beyond segment boundary\n",
+                 limit - allocated);
         return;
       }
       size = allocated - limit;
