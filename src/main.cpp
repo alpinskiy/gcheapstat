@@ -11,8 +11,6 @@ int main() {
     PrintUsage(stderr);
     return 1;
   }
-  SetConsoleCP(CP_UTF8);
-  SetConsoleOutputCP(CP_UTF8);
   if (options.pipename) {
     Mode = LoggerMode::RpcServer;
     auto hr = RpcServer{Buffer}.Run(options.pipename);

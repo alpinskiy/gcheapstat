@@ -7,7 +7,7 @@ import subprocess
 def zip_binary(zipname, platform, configuration):
   if platform == 'x86':
     name = 'gcheapstat32.exe'
-  elif platform == "x64":
+  elif platform == 'x64':
     name = 'gcheapstat64.exe'
   else:
     sys.exit('Expected platform either x86 or x64')
