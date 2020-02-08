@@ -63,7 +63,7 @@ HRESULT Application::GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
       auto hr = TryExceptRpc(&RpcProxyGetMtName, server_binding_.get(), addr,
                              bstr.GetAddress());
       if (SUCCEEDED(hr)) {
-        hr = StringCchCopyW(name, size, bstr.GetBSTR());
+        hr = StringCchCopyW(name, size, bstr);
         if (hr == STRSAFE_E_INSUFFICIENT_BUFFER) hr = S_FALSE;
         if (needed) *needed = bstr.length() + 1;
       }
