@@ -1,3 +1,6 @@
+#include <fcntl.h>
+#include <io.h>
+
 #include "application.h"
 #include "options.h"
 #include "rpc_server.h"
@@ -11,6 +14,7 @@ int main() {
     PrintUsage(stderr);
     return 1;
   }
+  _setmode(_fileno(stdout), _O_U16TEXT);
   if (options.pipename) {
     Mode = LoggerMode::RpcServer;
     auto hr = RpcServer{Buffer}.Run(options.pipename);
