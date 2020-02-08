@@ -1,4 +1,5 @@
 #pragma once
+#include "common.h"
 #include "dacprivate.h"
 #include "rpc_h.h"  // MtStat
 
@@ -86,17 +87,18 @@ class MtStatCalculator final {
           mem, ptr, (std::min)(allocation_context->ptr, allocated) - mem, heap,
           gen);
       if (allocated < allocation_context->limit) {
-        LogError(L"Allocation context limit goes %" PRIuPTR
+        LogError(L"Allocation context limit " PLHxPTR " goes %" PRIuPTR
                  " bytes beyond segment boundary\n",
+                 allocation_context->limit,
                  allocation_context->limit - allocated);
         return;
       }
       auto limit =
           allocation_context->limit + Align<kAlignment>(kMinObjectSize);
       if (allocated < limit) {
-        LogError(L"Aligned allocation context limit goes %" PRIuPTR
+        LogError(L"Aligned allocation context limit " PLHxPTR " goes %" PRIuPTR
                  " bytes beyond segment boundary\n",
-                 limit - allocated);
+                 limit, limit - allocated);
         return;
       }
       size = allocated - limit;
