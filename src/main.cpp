@@ -26,7 +26,7 @@ int main() {
     }
   }
   Mode = LoggerMode::Console;
-  auto hr = Application{}.Run(options);
+  auto hr = Application{Buffer}.Run(options);
   if (FAILED(hr)) {
     auto len = FormatMessageW(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, hr,

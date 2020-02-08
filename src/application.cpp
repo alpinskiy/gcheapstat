@@ -12,11 +12,6 @@ HRESULT RpcStubExchangePid(handle_t handle, PDWORD pid) {
 
 void RpcStubLogError(handle_t handle, BSTR message) { wprintf(message); }
 
-Application::Application()
-    : context_kind_{ContextKind::None},
-      server_pid_{0},
-      server_binding_initialized_{false} {}
-
 HRESULT Application::Run(Options &options) {
   SingletonScope<Application> singleton_scope{this};
   // Calculate
@@ -30,7 +25,8 @@ HRESULT Application::Run(Options &options) {
   auto first = items.begin();
   auto last = first;
   std::advance(last, (std::min)(items.size(), options.limit));
-  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), this);
+  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), buffer_, buffer_size_,
+                    this);
   return S_OK;
 }
 

@@ -8,7 +8,13 @@
 
 class Application final : IMtNameProvider {
  public:
-  Application();
+  template <uint32_t BufferSize>
+  Application(wchar_t (&buffer)[BufferSize])
+      : context_kind_{ContextKind::None},
+        server_pid_{0},
+        server_binding_initialized_{false},
+        buffer_{buffer},
+        buffer_size_{BufferSize} {}
   HRESULT Run(Options &options);
 
  private:
@@ -28,6 +34,8 @@ class Application final : IMtNameProvider {
   std::atomic<DWORD> server_pid_;
   wil::unique_rpc_binding server_binding_;
   std::atomic_bool server_binding_initialized_;
+  PWSTR buffer_;
+  size_t buffer_size_;
   friend HRESULT RpcStubExchangePid(handle_t handle, PDWORD pid);
   friend class ConsoleCtrlHandler;
 };

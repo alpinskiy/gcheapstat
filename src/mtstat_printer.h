@@ -7,16 +7,9 @@ struct IMtNameProvider {
                             uint32_t *needed) = 0;
 };
 
-inline bool IsUnicodeString(PCWSTR buffer, size_t size) {
-  size_t len = 0;
-  auto hr = StringCchLengthW(buffer, size, &len);
-  if (FAILED(hr)) return false;
-  return IsTextUnicode(buffer, static_cast<int>(len), nullptr);
-}
-
 template <typename T>
-void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
-                       IMtNameProvider *resolver) {
+void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr, PWSTR buffer,
+                       size_t buffer_size, IMtNameProvider *resolver) {
 #ifdef _WIN64
   constexpr auto kHeader =
       "              MT    Count    TotalSize Class Name\n";
@@ -26,7 +19,6 @@ void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
   constexpr auto kRowFormat = L"%08" PRIx32 "%9" PRIu32 "%13" PRIu32 " ";
 #endif
   printf(kHeader);
-  wchar_t buffer[1024];
   size_t total_count = 0;
   size_t total_size = 0;
   for (auto it = first; it != last; ++it) {
@@ -36,14 +28,11 @@ void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
     if (!count && !size) continue;
     wprintf(kRowFormat, it->addr, count, size);
     uint32_t needed;
-    auto hr = resolver->GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
-    if (SUCCEEDED(hr)) {
-      // Sometimes DAC returns garbage
-      if (IsUnicodeString(buffer, ARRAYSIZE(buffer)))
-        wprintf(L"%s\n", buffer);
-      else
-        wprintf(L"<error getting class name>\n");
-    } else
+    auto hr = resolver->GetMtName(it->addr, static_cast<uint32_t>(buffer_size),
+                                  buffer, &needed);
+    if (SUCCEEDED(hr))
+      wprintf(L"%s\n", buffer);
+    else
       wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
     total_count += count;
     total_size += size;
