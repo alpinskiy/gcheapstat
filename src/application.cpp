@@ -25,9 +25,41 @@ HRESULT Application::Run(Options &options) {
   auto first = items.begin();
   auto last = first;
   std::advance(last, (std::min)(items.size(), options.limit));
-  PrintWinDbgFormat(first, last, GetStatPtr(options.gen), buffer_, buffer_size_,
-                    this);
+  PrintWinDbgFormat(first, last, GetStatPtr(options.gen));
   return S_OK;
+}
+
+void Application::PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
+                                    Stat MtStat::*ptr) {
+#ifdef _WIN64
+  constexpr auto kHeader =
+      "              MT    Count    TotalSize Class Name\n";
+  constexpr auto kRowFormat = L"%016" PRIx64 "%9" PRIu64 "%13" PRIu64 " ";
+#else
+  constexpr auto kHeader = "      MT    Count    TotalSize Class Name\n";
+  constexpr auto kRowFormat = L"%08" PRIx32 "%9" PRIu32 "%13" PRIu32 " ";
+#endif
+  printf(kHeader);
+  size_t total_count = 0;
+  size_t total_size = 0;
+  for (auto it = first; it != last; ++it) {
+    if (IsCancelled()) return;
+    auto count = (*it.*ptr).count;
+    auto size = (*it.*ptr).size_total;
+    if (!count && !size) continue;
+    wprintf(kRowFormat, it->addr, count, size);
+    uint32_t needed;
+    auto hr = GetMtName(it->addr, static_cast<uint32_t>(buffer_size_), buffer_,
+                        &needed);
+    if (SUCCEEDED(hr))
+      wprintf(L"%s\n", buffer_);
+    else
+      wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
+    total_count += count;
+    total_size += size;
+  }
+  printf("Total %" PRIuPTR " objects\n", total_count);
+  printf("Total size %" PRIuPTR " bytes\n", total_size);
 }
 
 HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {

@@ -1,12 +1,11 @@
 #pragma once
 #include "common.h"
 #include "console_ctrl_handler.h"
-#include "mtstat_printer.h"
 #include "options.h"
 #include "process_context.h"
 #include "rpc_h.h"
 
-class Application final : IMtNameProvider {
+class Application final {
  public:
   template <uint32_t BufferSize>
   Application(wchar_t (&buffer)[BufferSize])
@@ -19,6 +18,9 @@ class Application final : IMtNameProvider {
 
  private:
   HRESULT CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
+  using mtstat_iterator = std::vector<MtStat>::const_iterator;
+  void PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
+                         Stat MtStat::*ptr);
   HRESULT GetMtName(uintptr_t addr, uint32_t size, PWSTR name,
                     uint32_t *needed);
   // Effectively runs RpcServer::CalculateMtStat under LocalSystem account

@@ -246,7 +246,6 @@
     <ClInclude Include="common.h" />
     <ClInclude Include="console_ctrl_handler.h" />
     <ClInclude Include="singleton_scope.h" />
-    <ClInclude Include="mtstat_printer.h" />
     <ClInclude Include="process_context.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rpc_helpers.h" />
