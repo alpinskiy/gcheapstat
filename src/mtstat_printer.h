@@ -32,10 +32,10 @@ void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
     auto hr = resolver->GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
     if (SUCCEEDED(hr)) {
       // Sometimes DAC returns garbage
-      if (IsTextUnicode(buffer, ARRAYSIZE(buffer), NULL))
+      if (IsTextUnicode(buffer, ARRAYSIZE(buffer), nullptr))
         wprintf(L"%s\n", buffer);
       else
-        wprintf(L"<error getting class name>\n", hr);
+        wprintf(L"<error getting class name>\n");
     } else
       wprintf(L"<error getting class name, code 0x%08lx>\n", hr);
     total_count += count;
