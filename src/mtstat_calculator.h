@@ -1,5 +1,4 @@
 #pragma once
-#include "common.h"
 #include "dacprivate.h"
 #include "rpc_h.h"  // MtStat
 
@@ -15,6 +14,13 @@ auto constexpr kMinObjectSize = sizeof(uintptr_t) +  // Method table address
                                 kObjectHeaderSize + sizeof(size_t);
 
 static_assert(DAC_NUMBERGENERATIONS == 4, "4 generations expected!");
+
+// printf format string PLaceHolder
+#ifdef _WIN64
+#define PLHxPTR "0x%016"##PRIxPTR
+#else
+#define PLHxPTR "0x%08"##PRIxPTR
+#endif
 
 class MtStatCalculator final {
  public:
