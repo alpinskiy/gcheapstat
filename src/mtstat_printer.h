@@ -7,6 +7,13 @@ struct IMtNameProvider {
                             uint32_t *needed) = 0;
 };
 
+inline bool IsUnicodeString(PCWSTR buffer, size_t size) {
+  size_t len = 0;
+  auto hr = StringCchLengthW(buffer, size, &len);
+  if (FAILED(hr)) return false;
+  return IsTextUnicode(buffer, static_cast<int>(len), nullptr);
+}
+
 template <typename T>
 void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
                        IMtNameProvider *resolver) {
@@ -32,7 +39,7 @@ void PrintWinDbgFormat(T first, T last, Stat MtStat::*ptr,
     auto hr = resolver->GetMtName(it->addr, ARRAYSIZE(buffer), buffer, &needed);
     if (SUCCEEDED(hr)) {
       // Sometimes DAC returns garbage
-      if (IsTextUnicode(buffer, ARRAYSIZE(buffer), nullptr))
+      if (IsUnicodeString(buffer, ARRAYSIZE(buffer)))
         wprintf(L"%s\n", buffer);
       else
         wprintf(L"<error getting class name>\n");
