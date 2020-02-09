@@ -64,7 +64,7 @@ if __name__ == '__main__':
   build('x64', 'Release')
   build('x86', 'Debug')
   build('x64', 'Debug')
-  tag = os.getenv('APPVEYOR_REPO_TAG_NAME') or os.getenv('APPVEYOR_BUILD_NUMBER') or ''
+  tag = version or os.getenv('APPVEYOR_BUILD_NUMBER') or ''
   # Zip binaries
   zipname = 'gcheapstat' + tag + '.zip';
   zip_binary(zipname, 'x86', 'Release')
