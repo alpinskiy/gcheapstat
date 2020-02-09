@@ -16,7 +16,7 @@ HRESULT Application::Run(Options &options) {
   SingletonScope<Application> singleton_scope{this};
   // Calculate
   std::vector<MtStat> items;
-  auto hr = CalculateMtStat(options.pid, items);
+  auto hr = CalculateMtStat(options, items);
   if (FAILED(hr)) return hr;
   if (IsCancelled()) return S_FALSE;
   // Sort
@@ -62,21 +62,24 @@ void Application::PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
   printf("Total size %" PRIuPTR " bytes\n", total_size);
 }
 
-HRESULT Application::CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat) {
+HRESULT Application::CalculateMtStat(Options &options,
+                                     std::vector<MtStat> &mtstat) {
   HRESULT hr;
-  ProcessContext process_context;
-  hr = process_context.Initialize(pid);
-  if (SUCCEEDED(hr)) {
-    hr = ::CalculateMtStat(process_context.process_handle.get(),
-                           process_context.sos_dac_interface.get(), mtstat);
+  if (!options.runaslocalsystem) {
+    ProcessContext process_context;
+    hr = process_context.Initialize(options.pid);
     if (SUCCEEDED(hr)) {
-      std::swap(process_context, process_context_);
-      context_kind_ = ContextKind::Local;
-      return hr;
+      hr = ::CalculateMtStat(process_context.process_handle.get(),
+                             process_context.sos_dac_interface.get(), mtstat);
+      if (SUCCEEDED(hr)) {
+        std::swap(process_context, process_context_);
+        context_kind_ = ContextKind::Local;
+        return hr;
+      }
     }
+    if (hr != E_ACCESSDENIED) return hr;
   }
-  if (hr != E_ACCESSDENIED) return hr;
-  hr = ServerCalculateMtStat(pid, mtstat);
+  hr = ServerCalculateMtStat(options.pid, mtstat);
   if (SUCCEEDED(hr)) context_kind_ = ContextKind::Remote;
   return hr;
 }

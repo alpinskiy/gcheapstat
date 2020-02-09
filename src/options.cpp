@@ -7,7 +7,7 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
   std::unique_ptr<PWSTR, decltype(&LocalFree)> argv_scope_guard{
       CommandLineToArgvW(cmdline, &argc), LocalFree};
   for (auto i = 1; i < argc; ++i) {
-    auto val = static_cast<PWSTR>(nullptr);
+    PWSTR val = nullptr;
     if (auto res = wcschr(argv[i], '=')) {
       auto next = res + 1;
       if (*next) val = next;
@@ -50,6 +50,10 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
       help = true;
     } else if (!wcscmp(argv[i], L"--verbose")) {
       verbose = true;
+    } else if (!wcscmp(argv[i], L"--runas")) {
+      if (!val || wcsncmp(val, L"localsystem", 11))
+        return false;  // account name is missing or unsupported
+      runaslocalsystem = true;
     } else {
       return false;  // invalid option
     }

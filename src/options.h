@@ -13,6 +13,7 @@ struct Options final {
   int gen{-1};
   bool help{false};
   bool verbose{false};
+  bool runaslocalsystem{false};
 
   bool ParseCommandLine(PCWSTR cmdline);
 };

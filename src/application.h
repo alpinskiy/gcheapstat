@@ -17,7 +17,7 @@ class Application final {
   HRESULT Run(Options &options);
 
  private:
-  HRESULT CalculateMtStat(DWORD pid, std::vector<MtStat> &mtstat);
+  HRESULT CalculateMtStat(Options &options, std::vector<MtStat> &mtstat);
   using mtstat_iterator = std::vector<MtStat>::const_iterator;
   void PrintWinDbgFormat(mtstat_iterator first, mtstat_iterator last,
                          Stat MtStat::*ptr);
