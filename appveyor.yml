@@ -2,8 +2,8 @@ version: '0.1.{build}'
 image: Visual Studio 2019
 install: git submodule update --init --recursive
 before_build:
-  - type %APPVEYOR_BUILD_FOLDER%\version.h
-  - echo #pragma once > %APPVEYOR_BUILD_FOLDER%\version.h
-  - echo #define VERSION "%APPVEYOR_BUILD_VERSION%" >> %APPVEYOR_BUILD_FOLDER%\version.h
-  - type %APPVEYOR_BUILD_FOLDER%\version.h
+  - type $(APPVEYOR_BUILD_FOLDER)\version.h
+  - echo #pragma once > $(APPVEYOR_BUILD_FOLDER)\version.h
+  - echo #define VERSION "%APPVEYOR_BUILD_VERSION%" >> $(APPVEYOR_BUILD_FOLDER)\version.h
+  - type $(APPVEYOR_BUILD_FOLDER)\version.h
 build_script: appveyor.py
