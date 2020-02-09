@@ -7,17 +7,17 @@ enum class LogMode { None, Console, Pipe };
 class Log {
  public:
   static LogMode Mode;
-  static int Level;
+  static bool Verbose;
 
   template <class... Args>
-  static void Write(int level, PCWSTR format, Args&&... args) {
-    if (Level < level) return;
+  static void Write(bool verbose, PCWSTR format, Args&&... args) {
+    if (Verbose < verbose) return;
     switch (Mode) {
       case LogMode::Console:
         wprintf(format, std::forward<Args>(args)...);
         break;
       case LogMode::Pipe:
-        SingletonScope<RpcServer>::Invoke(&RpcServer::LogError<Args...>, format,
+        SingletonScope<RpcServer>::Invoke(&RpcServer::LogWrite<Args...>, format,
                                           std::forward<Args>(args)...);
         break;
       default:
@@ -28,10 +28,10 @@ class Log {
 
 template <class... Args>
 void LogError(PCWSTR format, Args&&... args) {
-  Log::Write(0, format, std::forward<Args>(args)...);
+  Log::Write(false, format, std::forward<Args>(args)...);
 }
 
 template <class... Args>
 void LogDebug(PCWSTR format, Args&&... args) {
-  Log::Write(1, format, std::forward<Args>(args)...);
+  Log::Write(true, format, std::forward<Args>(args)...);
 }

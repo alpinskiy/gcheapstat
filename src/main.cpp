@@ -10,7 +10,7 @@ int main() {
     PrintUsage(stderr);
     return 1;
   }
-  if (options.verbose) Log::Level = 1;
+  Log::Verbose = options.verbose;
   if (options.pipename) {
     Log::Mode = LogMode::Pipe;
     auto hr = RpcServer{Buffer}.Run(options.pipename);

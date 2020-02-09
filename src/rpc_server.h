@@ -17,11 +17,11 @@ class RpcServer final {
   HRESULT GetMtName(uintptr_t addr, LPBSTR name);
 
   template <typename... Args>
-  void LogError(PCWSTR format, Args &&... args) {
+  void LogWrite(PCWSTR format, Args &&... args) {
     auto hr = StringCchPrintfW(buffer_, buffer_size_, format,
                                std::forward<Args>(args)...);
     _ASSERT(SUCCEEDED(hr));
-    TryExceptRpc(&RpcProxyLogError, application_binding_.get(),
+    TryExceptRpc(&RpcProxyLogWrite, application_binding_.get(),
                  _bstr_t{buffer_}.GetBSTR());
   }
 

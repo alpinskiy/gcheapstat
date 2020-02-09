@@ -1,4 +1,4 @@
 #include "log.h"
 
-LogMode Log::Mode;
-int Log::Level;
+LogMode Log::Mode{LogMode::None};
+bool Log::Verbose{true};

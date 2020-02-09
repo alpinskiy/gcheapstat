@@ -18,7 +18,7 @@ typedef struct tagMtStat {
 [uuid(5929c69e-e821-4fe6-ba90-9bac000a3e9e)]
 interface Client {
   HRESULT ExchangePid([in, out] DWORD *pid);
-  void LogError([in] BSTR message);
+  void LogWrite([in] BSTR message);
 }
 
 [uuid(66470eda-251f-4532-9a19-b225bb8c4874)]

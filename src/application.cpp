@@ -10,7 +10,7 @@ HRESULT RpcStubExchangePid(handle_t handle, PDWORD pid) {
   return SingletonScope<Application>::Invoke(&Application::ExchangePid, pid);
 }
 
-void RpcStubLogError(handle_t handle, BSTR message) { wprintf(message); }
+void RpcStubLogWrite(handle_t handle, BSTR message) { wprintf(message); }
 
 HRESULT Application::Run(Options &options) {
   SingletonScope<Application> singleton_scope{this};
@@ -142,10 +142,10 @@ HRESULT Application::RunServerAsLocalSystem() {
   }
   filepath[length] = 0;
   wchar_t cmdline[MAX_PATH];
-  fail =
-      FAILED(hr = StringCchPrintfW(cmdline, ARRAYSIZE(cmdline),
-                                   L"\"%s\" --pipe=%s", filepath, pipename)) ||
-      FAILED(hr = RunAsLocalSystem(cmdline));
+  fail = FAILED(hr = StringCchPrintfW(cmdline, ARRAYSIZE(cmdline),
+                                      L"\"%s\" --pipe=%s%s", filepath, pipename,
+                                      Log::Verbose ? L" --verbose" : L"")) ||
+         FAILED(hr = RunAsLocalSystem(cmdline));
   if (fail) return hr;
   // Wait for the spawned process connect
   DWORD server_pid;
