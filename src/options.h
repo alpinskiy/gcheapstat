@@ -14,8 +14,10 @@ struct Options final {
   bool help{false};
   bool verbose{false};
   bool runaslocalsystem{false};
+  bool version{false};
 
-  bool ParseCommandLine(PCWSTR cmdline);
+  int ParseCommandLine(PCWSTR cmdline);
 };
 
+void PrintVersion();
 void PrintUsage(FILE* file);

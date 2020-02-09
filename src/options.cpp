@@ -1,12 +1,15 @@
 #include "options.h"
 
-bool Options::ParseCommandLine(PCWSTR cmdline) {
+#include "version.h"
+
+int Options::ParseCommandLine(PCWSTR cmdline) {
   int argc = 0;
   auto argv = CommandLineToArgvW(cmdline, &argc);
-  if (argv == nullptr) return false;
+  if (argv == nullptr) return -1;
   std::unique_ptr<PWSTR, decltype(&LocalFree)> argv_scope_guard{
       CommandLineToArgvW(cmdline, &argc), LocalFree};
-  for (auto i = 1; i < argc; ++i) {
+  int count = 0;
+  for (auto i = 1; i < argc; ++i, ++count) {
     PWSTR val = nullptr;
     if (auto res = wcschr(argv[i], '=')) {
       auto next = res + 1;
@@ -14,7 +17,7 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
       *res = 0;
     }
     if (!wcscmp(argv[i], L"--pipe")) {
-      if (!val) return false;  // pipe name is missing
+      if (!val) return -1;  // pipe name is missing
       pipename = val;
     } else if (!wcscmp(argv[i], L"--pid")) {
       if (!val || swscanf_s(val, L"%u", &pid) != 1)
@@ -36,30 +39,34 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
         orderby = OrderBy::Count;
         val += 5;
       } else {
-        return false;  // invalid field name to sort on
+        return -1;  // invalid field name to sort on
       }
       if (val[0] == ':') {
         if (swscanf_s(val + 1, L"%u", &orderby_gen) != 1)
-          return false;  // invalid generation number to sort on
+          return -1;  // invalid generation number to sort on
       } else if (val[0])
-        return false;  // unrecognized string after field name
+        return -1;  // unrecognized string after field name
     } else if (!wcscmp(argv[i], L"--gen")) {
       if (swscanf_s(val, L"%u", &gen) != 1)
-        return false;  // invalid generation number to display
+        return -1;  // invalid generation number to display
     } else if (!wcscmp(argv[i], L"--help")) {
       help = true;
     } else if (!wcscmp(argv[i], L"--verbose")) {
       verbose = true;
     } else if (!wcscmp(argv[i], L"--runas")) {
       if (!val || wcsncmp(val, L"localsystem", 11))
-        return false;  // account name is missing or unsupported
+        return -1;  // account name is missing or unsupported
       runaslocalsystem = true;
+    } else if (!wcscmp(argv[i], L"--version")) {
+      version = true;
     } else {
-      return false;  // invalid option
+      return -1;  // invalid option
     }
   }
-  return true;
+  return count;
 }
+
+void PrintVersion() { printf("gcheapstat version " VERSION "\n"); }
 
 void PrintUsage(FILE* file) {
   fprintf(file,
