@@ -4,4 +4,5 @@ install: git submodule update --init --recursive
 before_build:
   - echo #pragma once > src\version.h
   - echo #define VERSION "%APPVEYOR_BUILD_VERSION%" >> src\version.h
+  - type src\version.h
 build_script: appveyor.py
