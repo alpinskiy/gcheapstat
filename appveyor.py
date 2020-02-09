@@ -53,6 +53,12 @@ def push_artifact(name):
   subprocess.call(['appveyor', 'PushArtifact', name])
 
 if __name__ == '__main__':
+  # Update version
+  version = os.getenv('APPVEYOR_BUILD_VERSION')
+  if version:
+    with open('src\version.h', 'w') as version_file:
+      version_file.write('#pragma once\n')
+      version_file.write('#define VERSION "' + version + '"\n')
   # Build
   build('x86', 'Release')
   build('x64', 'Release')
