@@ -14,7 +14,7 @@ class Log {
     if (Verbose < verbose) return;
     switch (Mode) {
       case LogMode::Console:
-        wprintf(format, std::forward<Args>(args)...);
+        fwprintf(stderr, format, std::forward<Args>(args)...);
         break;
       case LogMode::Pipe:
         SingletonScope<RpcServer>::Invoke(&RpcServer::LogWrite<Args...>, format,

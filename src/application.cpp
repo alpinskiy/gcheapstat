@@ -10,7 +10,9 @@ HRESULT RpcStubExchangePid(handle_t handle, PDWORD pid) {
   return SingletonScope<Application>::Invoke(&Application::ExchangePid, pid);
 }
 
-void RpcStubLogWrite(handle_t handle, BSTR message) { wprintf(message); }
+void RpcStubLogWrite(handle_t handle, BSTR message) {
+  fwprintf(stderr, message);
+}
 
 HRESULT Application::Run(Options &options) {
   SingletonScope<Application> singleton_scope{this};
