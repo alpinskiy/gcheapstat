@@ -24,6 +24,10 @@
   <ItemGroup>
     <ResourceCompile Include="gcheapstatsvc.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="version.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{11FC0319-51FD-4645-AE1A-AC759AEFDA62}</ProjectGuid>

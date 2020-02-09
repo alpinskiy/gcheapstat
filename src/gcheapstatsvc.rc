@@ -71,7 +71,7 @@ BEGIN
             VALUE "FileDescription", ".NET GC heap statistics generator service"
             VALUE "LegalCopyright", "Copyright (C) 2020 Mikhail Alpinskiy"
             VALUE "ProductName", "GcHeapStat"
-            VALUE "ProductVersion", "0.1.0"
+            VALUE "ProductVersion", VERSION
         END
     END
     BLOCK "VarFileInfo"
