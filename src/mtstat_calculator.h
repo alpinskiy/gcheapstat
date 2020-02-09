@@ -125,10 +125,22 @@ class MtStatCalculator final {
       // Get method table address
       auto mt = *reinterpret_cast<uintptr_t*>(ptr) & ~3;
       if (!mt) {
-        LogError(
-            L"Zero method table address encountered, skip %zu bytes of "
-            L"gen#%zu\n",
-            size, gen);
+        auto end = ptr + size;
+        for (; ptr < end && *ptr == 0; ++ptr)
+          ;
+        if (ptr == end) {
+          if (!gen)
+            LogDebug(L"%zu-byte tail of a gen#0 segment is all filled with zeros",
+                     size);
+          else
+            LogError(
+                L"%zu-byte tail of a gen#%zu segment is all filled with zeros",
+                size, gen);
+        } else
+          LogError(
+              L"Zero method table address encountered, skip %zu bytes of "
+              L"gen#%zu\n",
+              size, gen);
         return;
       }
       // Get method table data
