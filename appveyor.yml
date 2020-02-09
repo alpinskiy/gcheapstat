@@ -2,5 +2,7 @@ version: '0.1.{build}'
 image: Visual Studio 2019
 install: git submodule update --init --recursive
 before_build:
+  - echo %PATH%
+  - echo %APPVEYOR_REPO_TAG_NAME%
   - echo %APPVEYOR_BUILD_FOLDER%
 build_script: appveyor.py
