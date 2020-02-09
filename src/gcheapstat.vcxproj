@@ -259,6 +259,7 @@
     <ClInclude Include="process_info.h" />
     <ClInclude Include="rpc_h.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gcheapstat.rc" />

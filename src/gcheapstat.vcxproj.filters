@@ -38,6 +38,7 @@
     <ClInclude Include="console_ctrl_handler.h" />
     <ClInclude Include="singleton_scope.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="rpc.idl" />
