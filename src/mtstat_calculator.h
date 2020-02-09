@@ -72,7 +72,7 @@ class MtStatCalculator final {
     if (!ReadProcessMemory(hprocess_, reinterpret_cast<LPCVOID>(mem),
                            &buffer[0], size, &read)) {
       auto hr = HRESULT_FROM_WIN32(GetLastError());
-      LogError(L"Error reading segment memory, code 0x%08lx\n", hr);
+      LogError(L"Error 0x%08lx reading segment memory\n", hr);
       return;
     }
     if (read != size) {
@@ -138,8 +138,8 @@ class MtStatCalculator final {
         auto hr = mt_data.Request(sos_dac_interface_.get(), mt);
         if (FAILED(hr)) {
           LogError(
-              L"Error getting method table data, code 0x%08lx, skip %zu bytes "
-              L"of gen#%zu\n",
+              L"Error 0x%08lx getting method table data, skip %zu bytes of "
+              L"gen#%zu\n",
               hr, size, gen);
           return;
         }

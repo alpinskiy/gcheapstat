@@ -11,9 +11,9 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
   hprocess_ = hprocess;
   sos_dac_interface_ = sos_dac_interface;
   auto hr = info_.Request(sos_dac_interface_.get());
-  if (FAILED(hr)) LogError(L"Error getting GCHeapData, code 0x%08lx\n", hr);
+  if (FAILED(hr)) LogError(L"Error 0x%08lx getting GCHeapData\n", hr);
   hr = sos_dac_interface_->GetUsefulGlobals(&useful_globals_);
-  if (FAILED(hr)) LogError(L"Error getting UsefulGlobals, code 0x%08lx\n", hr);
+  if (FAILED(hr)) LogError(L"Error 0x%08lx getting UsefulGlobals\n", hr);
   // Get heaps
   if (info_.bServerMode) {
     std::vector<CLRDATA_ADDRESS> heap_addr_list(info_.HeapCount);
@@ -21,7 +21,7 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
     hr = sos_dac_interface_->GetGCHeapList(info_.HeapCount, &heap_addr_list[0],
                                            &needed);
     if (FAILED(hr)) {
-      LogError(L"Error getting GCHeapList, code 0x%08lx\n", hr);
+      LogError(L"Error 0x%08lx getting GCHeapList\n", hr);
       return hr;
     }
     HRESULT lasterror = S_OK;
@@ -30,9 +30,8 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       DacpGcHeapDetails heap{};
       hr = heap.Request(sos_dac_interface_.get(), addr);
       if (FAILED(hr)) {
-        LogError(L"Error getting GcHeapDetails at 0x%016" PRIX64
-                 ", code 0x%08lx\n",
-                 addr, hr);
+        LogError(L"Error 0x%08lx getting GcHeapDetails at 0x%016" PRIX64 "\n",
+                 hr, addr);
         lasterror = hr;
       } else
         heaps_.push_back(heap);
@@ -43,7 +42,7 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
     DacpGcHeapDetails heap{};
     hr = heap.Request(sos_dac_interface_.get());
     if (FAILED(hr)) {
-      LogError(L"Error getting GcHeapDetails, code 0x%08lx\n", hr);
+      LogError(L"Error 0x%08lx getting GcHeapDetails\n", hr);
       return hr;
     } else
       heaps_.push_back(heap);
@@ -63,7 +62,8 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       Segment segment{static_cast<uintptr_t>(addr), heap};
       hr = segment.data.Request(sos_dac_interface_.get(), addr, *heap);
       if (FAILED(hr)) {
-        LogError(L"Error getting SegmentData at 0x%016" PRIX64 "\n", addr);
+        LogError(L"Error 0x%08lx getting SegmentData at 0x%016" PRIX64 "\n", hr,
+                 addr);
         break;
       }
       segments_[0].push_back(segment);
@@ -75,7 +75,8 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
       Segment segment{static_cast<uintptr_t>(addr), heap};
       hr = segment.data.Request(sos_dac_interface_.get(), addr, *heap);
       if (FAILED(hr)) {
-        LogError(L"Error getting SegmentData at 0x%016" PRIX64 "\n", addr);
+        LogError(L"Error 0x%08lx getting SegmentData at 0x%016" PRIX64 "\n", hr,
+                 addr);
         break;
       }
       segments_[1].push_back(segment);
@@ -91,9 +92,8 @@ HRESULT MtStatCalculator::Initialize(HANDLE hprocess,
          thread = thread_data.nextThread) {
       hr = thread_data.Request(sos_dac_interface_.get(), thread);
       if (FAILED(hr)) {
-        LogError(L"Error getting ThreadData at 0x%016" PRIX64
-                 ", code 0x%08lx\n",
-                 thread, hr);
+        LogError(L"Error 0x%08lx getting ThreadData at 0x%016" PRIX64 "\n", hr,
+                 thread);
       } else if (thread_data.allocContextPtr) {
         auto i = 0u;
         for (; i < allocation_contexts_.size() &&
