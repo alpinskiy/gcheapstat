@@ -21,4 +21,4 @@
 //
 #include "cancellation.h"
 #include "crosscomp.h"
-#include "logger.h"
+#include "log.h"

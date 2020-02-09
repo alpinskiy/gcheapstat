@@ -195,6 +195,7 @@
     <ClCompile Include="clr_data_access.cpp" />
     <ClCompile Include="clr_data_target_impl.cpp" />
     <ClCompile Include="console_ctrl_handler.cpp" />
+    <ClCompile Include="log.cpp" />
     <ClCompile Include="process_context.cpp" />
     <ClCompile Include="rpc_helpers.cpp" />
     <ClCompile Include="cancellation.cpp" />
@@ -253,7 +254,7 @@
     <ClInclude Include="mtstat_calculator.h" />
     <ClInclude Include="rpc_server.h" />
     <ClInclude Include="runas_localsystem.h" />
-    <ClInclude Include="logger.h" />
+    <ClInclude Include="log.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="process_info.h" />
     <ClInclude Include="rpc_h.h" />

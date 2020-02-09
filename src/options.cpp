@@ -48,6 +48,8 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
         return false;  // invalid generation number to display
     } else if (!wcscmp(argv[i], L"--help")) {
       help = true;
+    } else if (!wcscmp(argv[i], L"--verbose")) {
+      verbose = true;
     } else {
       return false;  // invalid option
     }
@@ -57,6 +59,6 @@ bool Options::ParseCommandLine(PCWSTR cmdline) {
 
 void PrintUsage(FILE* file) {
   fprintf(file,
-          "usage: gcheapstat --pid=<pid> [--sort=(size|count)[:<gen>]] "
-          "[--limit=<count>] [--gen=<gen>]\n");
+          "usage: gcheapstat [--verbose] [--sort=(size|count)[:<gen>]] "
+          "[--limit=<count>] [--gen=<gen>] --pid=<pid>\n");
 }

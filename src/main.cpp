@@ -2,7 +2,6 @@
 #include "options.h"
 #include "rpc_server.h"
 
-LoggerMode Mode{LoggerMode::None};
 wchar_t Buffer[64 * 1024];
 
 int main() {
@@ -11,8 +10,9 @@ int main() {
     PrintUsage(stderr);
     return 1;
   }
+  if (options.verbose) Log::Level = 1;
   if (options.pipename) {
-    Mode = LoggerMode::RpcServer;
+    Log::Mode = LogMode::Pipe;
     auto hr = RpcServer{Buffer}.Run(options.pipename);
     return FAILED(hr) ? 1 : 0;
   }
@@ -25,7 +25,7 @@ int main() {
       return 1;
     }
   }
-  Mode = LoggerMode::Console;
+  Log::Mode = LogMode::Console;
   auto hr = Application{Buffer}.Run(options);
   if (FAILED(hr)) {
     auto len = FormatMessageW(

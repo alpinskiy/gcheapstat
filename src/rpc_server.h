@@ -35,6 +35,5 @@ class RpcServer final {
   friend HRESULT RpcStubGetMtStat(handle_t handle, SIZE_T offset, UINT size,
                                   MtStat mtstat[]);
   friend HRESULT RpcStubGetMtName(handle_t handle, UINT_PTR addr, LPBSTR name);
-  template <typename... Args>
-  friend void LogError(PCWSTR format, Args &&... args);
+  friend class Log;
 };
