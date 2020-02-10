@@ -68,8 +68,9 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
 void PrintVersion() { printf("gcheapstat version " VERSION "\n"); }
 
 void PrintUsage(FILE* file) {
-  fprintf(
-      file,
-      "usage: gcheapstat [-version] [-verbose] [-sort:(size|count)[:<gen>]] "
-      "[-limit:<count>] [-gen:<gen>] [-runas:localsystem] -pid:<pid>\n");
+  // clang-format off
+  fprintf(file, ".NET GC heap statistics generator.\n\n");
+  fprintf(file, "gcheapstat [-version] [-help] [-verbose] [-sort:(size|count)[:<gen>]]\n");
+  fprintf(file, "           [-limit:<count>] [-gen:<gen>] [-runas:localsystem] -pid:<pid>\n");
+  // clang-format on
 }
