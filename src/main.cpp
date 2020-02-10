@@ -13,7 +13,7 @@ int main() {
     return 1;
   }
   if (options.verbose) {
-    // '--verbose' option can be used in combination with any, don't count it
+    // '-verbose' option can be used in combination with any, don't count it
     --count;
     Log::Verbose = true;
   }
@@ -28,8 +28,8 @@ int main() {
     if (count == 1) return 0;
   }
   if (options.help) {
-    // '--help' option can be used either along or in combination with
-    // '--version'
+    // '-help' option can be used either along or in combination with
+    // '-version'
     if (count <= 1 || (count == 2 && options.version)) {
       PrintUsage(stdout);
       return 0;
@@ -53,7 +53,6 @@ int main() {
         _ARRAYSIZE(Buffer), NULL);
     if (len) {
       wprintf(Buffer);
-      wprintf(L"\n");
     } else
       wprintf(L"Error 0x%08lx\n", hr);
     return 1;

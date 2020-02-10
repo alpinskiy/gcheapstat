@@ -148,8 +148,8 @@ HRESULT Application::RunServerAsLocalSystem() {
   filepath[length] = 0;
   wchar_t cmdline[MAX_PATH];
   fail = FAILED(hr = StringCchPrintfW(cmdline, ARRAYSIZE(cmdline),
-                                      L"\"%s\" --pipe=%s%s", filepath, pipename,
-                                      Log::Verbose ? L" --verbose" : L"")) ||
+                                      L"\"%s\" -pipe:%s%s", filepath, pipename,
+                                      Log::Verbose ? L" -verbose" : L"")) ||
          FAILED(hr = RunAsLocalSystem(cmdline));
   if (fail) return hr;
   // Wait for the spawned process connect
