@@ -61,9 +61,13 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
     } else if (!_wcsicmp(argv[i], L"/help") || !_wcsicmp(argv[i], L"/h") ||
                !_wcsicmp(argv[i], L"/?"))
       help = true;
-    else if (!_wcsicmp(argv[i], L"/verbose") || !_wcsicmp(argv[i], L"/V"))
-      verbose = true;
-    else if (!_wcsicmp(argv[i], L"/runas") || !_wcsicmp(argv[i], L"/as")) {
+    else if (!_wcsicmp(argv[i], L"/verbose") || !_wcsicmp(argv[i], L"/V")) {
+      if (!val || !_wcsicmp(val, L"yes"))
+        verbose = true;
+      else if (_wcsicmp(val, L"no"))
+        // invalid verbose option
+        return -1;
+    } else if (!_wcsicmp(argv[i], L"/runas") || !_wcsicmp(argv[i], L"/as")) {
       if (!val)
         // account name is missing
         return -1;
