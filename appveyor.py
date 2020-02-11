@@ -56,8 +56,7 @@ if __name__ == '__main__':
   # Update version
   version = os.getenv('APPVEYOR_BUILD_VERSION')
   if version:
-    with open(r'src\version.h', 'w') as version_file:
-      version_file.write('#pragma once\n')
+    with open(r'src\version.txt', 'w') as version_file:
       version_file.write('#define VERSION "' + version + '"\n')
   # Build
   build('x86', 'Release')

@@ -103,7 +103,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -125,7 +125,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -148,7 +148,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -174,7 +174,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -259,7 +259,6 @@
     <ClInclude Include="process_info.h" />
     <ClInclude Include="rpc_h.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gcheapstat.rc" />

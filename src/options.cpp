@@ -85,12 +85,15 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
   return count;
 }
 
-void PrintVersion() { printf("gcheapstat version " VERSION "\n"); }
+void PrintVersion() { printf(PRODUCTNAME " version " VERSION "\n"); }
 
 void PrintUsage(FILE* file) {
+  fprintf(file, DESCRIPTION ".\n\n");
+  char name[] = TARGETNAME;
   // clang-format off
-  fprintf(file, ".NET GC heap statistics generator.\n\n");
-  fprintf(file, "GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{SIZE|COUNT}[:gen]]\n");
-  fprintf(file, "           [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n");
+  std::transform(name, name + strlen(name), name, toupper);
+  fprintf(file, "%s [/VERSION] [/HELP] [/VERBOSE] [/SORT:{SIZE|COUNT}[:gen]]\n", name);
+  std::fill_n(name, strlen(name), ' ');
+  fprintf(file, "%s [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n", name);
   // clang-format on
 }
