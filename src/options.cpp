@@ -61,7 +61,7 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
     } else if (!_wcsicmp(argv[i], L"/help") || !_wcsicmp(argv[i], L"/h") ||
                !_wcsicmp(argv[i], L"/?"))
       help = true;
-    else if (!_wcsicmp(argv[i], L"/verbose") || !_wcsicmp(argv[i], L"/V")) {
+    else if (!_wcsicmp(argv[i], L"/verbose") || !wcscmp(argv[i], L"/V")) {
       if (!val || !_wcsicmp(val, L"yes"))
         verbose = true;
       else if (_wcsicmp(val, L"no"))
