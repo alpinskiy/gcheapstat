@@ -1,4 +1,3 @@
-version: '0.1.{build}'
 image: Visual Studio 2019
 install: git submodule update --init --recursive
 build_script: appveyor.py
