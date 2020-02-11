@@ -103,7 +103,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -114,6 +114,7 @@
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)out\$(PlatformTarget)\$(Configuration)\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -125,7 +126,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -136,6 +137,7 @@
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)out\$(PlatformTarget)\$(Configuration)\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -148,7 +150,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -162,6 +164,7 @@
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)out\$(PlatformTarget)\$(Configuration)\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -174,7 +177,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)\ext\clr\;$(SolutionDir)ext\wil\include\;$(DotNetSdk_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;TARGETNAME="$(TargetName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -188,6 +191,7 @@
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)out\$(PlatformTarget)\$(Configuration)\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TARGETNAME=$(TargetName);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

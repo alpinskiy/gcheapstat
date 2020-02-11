@@ -89,7 +89,7 @@ void PrintVersion() { printf(PRODUCTNAME " version " VERSION "\n"); }
 
 void PrintUsage(FILE* file) {
   fprintf(file, DESCRIPTION ".\n\n");
-  char name[] = TARGETNAME;
+  char name[] = Q(TARGETNAME);
   // clang-format off
   std::transform(name, name + strlen(name), name, toupper);
   fprintf(file, "%s [/VERSION] [/HELP] [/VERBOSE] [/SORT:{SIZE|COUNT}[:gen]]\n", name);
