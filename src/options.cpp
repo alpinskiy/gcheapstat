@@ -16,51 +16,67 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
       if (*next) val = next;
       *res = 0;
     }
-    if (!wcscmp(argv[i], L"-pipe")) {
-      if (!val) return -1;  // pipe name is missing
+    if (!wcsicmp(argv[i], L"/pipe")) {
+      if (!val)
+        // pipe name is missing
+        return -1;
       pipename = val;
-    } else if (!wcscmp(argv[i], L"-pid") || !wcscmp(argv[i], L"-p")) {
+    } else if (!wcsicmp(argv[i], L"/pid") || !wcsicmp(argv[i], L"/p")) {
       if (!val || swscanf_s(val, L"%u", &pid) != 1)
-        return -1;  // pid is missing or invalid
-    } else if (!wcscmp(argv[i], L"-limit") || !wcscmp(argv[i], L"-l")) {
+        // pid is invalid or missing
+        return -1;
+    } else if (!wcsicmp(argv[i], L"/limit") || !wcsicmp(argv[i], L"/l")) {
       if (!val || swscanf_s(val, L"%zu", &limit) != 1)
-        return -1;  // limit is missing or invalid
-    } else if (!wcscmp(argv[i], L"-sort") || !wcscmp(argv[i], L"-s")) {
-      if (!val) continue;  // default sorting options apply
+        // limit is missing or invalid
+        return -1;
+    } else if (!wcsicmp(argv[i], L"/sort") || !wcsicmp(argv[i], L"/s")) {
+      if (!val)
+        // default sorting options apply
+        continue;
       if (val[0] == '-') {
         order = Order::Desc;
         ++val;
-        if (*val == 0) continue;  // reverse sort order only
+        if (*val == 0)
+          // just invert sort order
+          continue;
       }
       if (auto res = wcschr(val, ':')) {
         auto next = res + 1;
         if (*next && swscanf_s(next, L"%u", &orderby_gen) != 1)
-          return -1;  // invalid generation number to sort on
+          // invalid generation number to sort on
+          return -1;
         *res = 0;
       }
-      if (!wcscmp(val, L"size") || !wcscmp(val, L"s"))
+      if (!wcsicmp(val, L"size") || !wcsicmp(val, L"s"))
         orderby = OrderBy::TotalSize;
-      else if (!wcscmp(val, L"count") || !wcscmp(val, L"c"))
+      else if (!wcsicmp(val, L"count") || !wcsicmp(val, L"c"))
         orderby = OrderBy::Count;
       else
-        return -1;  // invalid field name to sort on
-    } else if (!wcscmp(argv[i], L"-gen") || !wcscmp(argv[i], L"-g")) {
+        // invalid field name to sort on
+        return -1;
+    } else if (!wcsicmp(argv[i], L"/gen") || !wcsicmp(argv[i], L"/g")) {
       if (swscanf_s(val, L"%u", &gen) != 1)
-        return -1;  // invalid generation number to display
-    } else if (!wcscmp(argv[i], L"-help") || !wcscmp(argv[i], L"-h"))
+        // invalid generation number to display
+        return -1;
+    } else if (!wcsicmp(argv[i], L"/help") || !wcsicmp(argv[i], L"/h") ||
+               !wcsicmp(argv[i], L"/?"))
       help = true;
-    else if (!wcscmp(argv[i], L"-verbose") || !wcscmp(argv[i], L"-V"))
+    else if (!wcsicmp(argv[i], L"/verbose") || !wcsicmp(argv[i], L"/V"))
       verbose = true;
-    else if (!wcscmp(argv[i], L"-runas") || !wcscmp(argv[i], L"-as")) {
-      if (!val) return -1;  // account name is missing
-      if (!wcscmp(val, L"localsystem"))
+    else if (!wcsicmp(argv[i], L"/runas") || !wcsicmp(argv[i], L"/as")) {
+      if (!val)
+        // account name is missing
+        return -1;
+      if (!wcsicmp(val, L"localsystem"))
         runaslocalsystem = true;
       else
-        return -1;  // unrecognized account name
-    } else if (!wcscmp(argv[i], L"-version") || !wcscmp(argv[i], L"-v")) {
+        // unrecognized account name
+        return -1;
+    } else if (!wcsicmp(argv[i], L"/version") || !wcscmp(argv[i], L"/v")) {
       version = true;
     } else
-      return -1;  // invalid option
+      // invalid option
+      return -1;
   }
   return count;
 }
@@ -70,7 +86,7 @@ void PrintVersion() { printf("gcheapstat version " VERSION "\n"); }
 void PrintUsage(FILE* file) {
   // clang-format off
   fprintf(file, ".NET GC heap statistics generator.\n\n");
-  fprintf(file, "gcheapstat [-version] [-help] [-verbose] [-sort:(size|count)[:<gen>]]\n");
-  fprintf(file, "           [-limit:<count>] [-gen:<gen>] [-runas:localsystem] -pid:<pid>\n");
+  fprintf(file, "GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:(SIZE|COUNT)[:gen]]\n");
+  fprintf(file, "           [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n");
   // clang-format on
 }
