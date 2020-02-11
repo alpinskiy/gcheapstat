@@ -90,7 +90,7 @@ void PrintVersion() { printf("gcheapstat version " VERSION "\n"); }
 void PrintUsage(FILE* file) {
   // clang-format off
   fprintf(file, ".NET GC heap statistics generator.\n\n");
-  fprintf(file, "GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:(SIZE|COUNT)[:gen]]\n");
+  fprintf(file, "GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{SIZE|COUNT}[:gen]]\n");
   fprintf(file, "           [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n");
   // clang-format on
 }
