@@ -53,17 +53,17 @@ def push_artifact(name):
   subprocess.call(['appveyor', 'PushArtifact', name])
 
 if __name__ == '__main__':
-  # Update version
-  version = os.getenv('APPVEYOR_BUILD_VERSION')
-  if version:
-    with open(r'src\version.txt', 'w') as version_file:
-      version_file.write('#define VERSION "' + version + '"\n')
+  # Update build number
+  build_number = os.getenv('APPVEYOR_BUILD_NUMBER')
+  if build_number:
+    with open(r'build.txt', 'w') as build_file:
+      build_file.write('#define BUILD "' + build_number + '"\n')
   # Build
   build('x86', 'Release')
   build('x64', 'Release')
   build('x86', 'Debug')
   build('x64', 'Debug')
-  tag = version or os.getenv('APPVEYOR_BUILD_NUMBER') or ''
+  tag = version or build_number or ''
   # Zip binaries
   zipname = 'gcheapstat' + tag + '.zip';
   zip_binary(zipname, 'x86', 'Release')
