@@ -57,7 +57,7 @@ if __name__ == '__main__':
   build_number = os.getenv('APPVEYOR_BUILD_NUMBER')
   if build_number:
     with open(r'build.txt', 'w') as build_file:
-      build_file.write('#define BUILD "' + build_number + '"\n')
+      build_file.write('#define BUILD ' + build_number + '\n')
   # Build
   build('x86', 'Release')
   build('x64', 'Release')
