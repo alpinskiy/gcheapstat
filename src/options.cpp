@@ -16,20 +16,20 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
       if (*next) val = next;
       *res = 0;
     }
-    if (!wcsicmp(argv[i], L"/pipe")) {
+    if (!_wcsicmp(argv[i], L"/pipe")) {
       if (!val)
         // pipe name is missing
         return -1;
       pipename = val;
-    } else if (!wcsicmp(argv[i], L"/pid") || !wcsicmp(argv[i], L"/p")) {
+    } else if (!_wcsicmp(argv[i], L"/pid") || !_wcsicmp(argv[i], L"/p")) {
       if (!val || swscanf_s(val, L"%u", &pid) != 1)
         // pid is invalid or missing
         return -1;
-    } else if (!wcsicmp(argv[i], L"/limit") || !wcsicmp(argv[i], L"/l")) {
+    } else if (!_wcsicmp(argv[i], L"/limit") || !_wcsicmp(argv[i], L"/l")) {
       if (!val || swscanf_s(val, L"%zu", &limit) != 1)
         // limit is missing or invalid
         return -1;
-    } else if (!wcsicmp(argv[i], L"/sort") || !wcsicmp(argv[i], L"/s")) {
+    } else if (!_wcsicmp(argv[i], L"/sort") || !_wcsicmp(argv[i], L"/s")) {
       if (!val)
         // default sorting options apply
         continue;
@@ -47,32 +47,32 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
           return -1;
         *res = 0;
       }
-      if (!wcsicmp(val, L"size") || !wcsicmp(val, L"s"))
+      if (!_wcsicmp(val, L"size") || !_wcsicmp(val, L"s"))
         orderby = OrderBy::TotalSize;
-      else if (!wcsicmp(val, L"count") || !wcsicmp(val, L"c"))
+      else if (!_wcsicmp(val, L"count") || !_wcsicmp(val, L"c"))
         orderby = OrderBy::Count;
       else
         // invalid field name to sort on
         return -1;
-    } else if (!wcsicmp(argv[i], L"/gen") || !wcsicmp(argv[i], L"/g")) {
+    } else if (!_wcsicmp(argv[i], L"/gen") || !_wcsicmp(argv[i], L"/g")) {
       if (swscanf_s(val, L"%u", &gen) != 1)
         // invalid generation number to display
         return -1;
-    } else if (!wcsicmp(argv[i], L"/help") || !wcsicmp(argv[i], L"/h") ||
-               !wcsicmp(argv[i], L"/?"))
+    } else if (!_wcsicmp(argv[i], L"/help") || !_wcsicmp(argv[i], L"/h") ||
+               !_wcsicmp(argv[i], L"/?"))
       help = true;
-    else if (!wcsicmp(argv[i], L"/verbose") || !wcsicmp(argv[i], L"/V"))
+    else if (!_wcsicmp(argv[i], L"/verbose") || !_wcsicmp(argv[i], L"/V"))
       verbose = true;
-    else if (!wcsicmp(argv[i], L"/runas") || !wcsicmp(argv[i], L"/as")) {
+    else if (!_wcsicmp(argv[i], L"/runas") || !_wcsicmp(argv[i], L"/as")) {
       if (!val)
         // account name is missing
         return -1;
-      if (!wcsicmp(val, L"localsystem"))
+      if (!_wcsicmp(val, L"localsystem"))
         runaslocalsystem = true;
       else
         // unrecognized account name
         return -1;
-    } else if (!wcsicmp(argv[i], L"/version") || !wcscmp(argv[i], L"/v")) {
+    } else if (!_wcsicmp(argv[i], L"/version") || !wcscmp(argv[i], L"/v")) {
       version = true;
     } else
       // invalid option
