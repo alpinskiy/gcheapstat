@@ -10,7 +10,7 @@ int main() {
   auto count = options.ParseCommandLine(GetCommandLineW());
   if (count < 0) {
     // Error parsing the command-line arguments
-    fprintf(stderr, "See '" Q(TARGETNAME) " /help'.\n");
+    fprintf(stderr, "See '" QTARGETNAME " /help'.\n");
     return 1;
   }
   if (options.help) {
@@ -32,7 +32,8 @@ int main() {
   }
   if (!options.pid) {
     fprintf(stderr,
-            "Target PID is not specified. See '" Q(TARGETNAME) " /help'.\n");
+            "Process ID of the target application is not specified. See "
+            "'" QTARGETNAME " /help'.\n");
     return 1;
   }
   // Go

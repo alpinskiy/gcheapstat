@@ -10,9 +10,10 @@
 
 #define QQ(x) #x
 #define Q(x) QQ(x)
+#define QTARGETNAME Q(TARGETNAME)
 
 #define PRODUCTNAME "GCHeapStat"
 #define DESCRIPTION ".NET GC heap statistics generator"
 #define COPYRIGHT "Copyright (C) 2020 Mikhail Alpinskiy"
 #define VERSION Q(MAJOR) "." Q(MINOR) "." Q(PATCH) "." Q(BUILD)
-#define FILENAME Q(TARGETNAME) ".exe"
+#define FILENAME QTARGETNAME ".exe"
