@@ -1,6 +1,7 @@
 #include "application.h"
 #include "options.h"
 #include "rpc_server.h"
+#include "version.h"
 
 wchar_t Buffer[64 * 1024];
 
@@ -9,7 +10,7 @@ int main() {
   auto count = options.ParseCommandLine(GetCommandLineW());
   if (count < 0) {
     // Error parsing the command-line arguments
-    PrintUsage(stderr);
+    fprintf(stderr, "See '" Q(TARGETNAME) " /help'.\n");
     return 1;
   }
   if (options.verbose) {
@@ -28,19 +29,12 @@ int main() {
     if (count == 1) return 0;
   }
   if (options.help) {
-    // '-help' option can be used either along or in combination with
-    // '-version'
-    if (count <= 1 || (count == 2 && options.version)) {
-      PrintUsage(stdout);
-      return 0;
-    } else {
-      PrintUsage(stderr);
-      return 1;
-    }
+    PrintUsage(stdout);
+    return 0;
   }
   if (!options.pid) {
-    // Please read the documentation first
-    PrintUsage(stderr);
+    fprintf(stderr,
+            "Target PID is not specified. See '" Q(TARGETNAME) " /help'.\n");
     return 1;
   }
   // OK
