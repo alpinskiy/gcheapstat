@@ -13,31 +13,29 @@ int main() {
     fprintf(stderr, "See '" Q(TARGETNAME) " /help'.\n");
     return 1;
   }
-  if (options.verbose) {
-    // '-verbose' option can be used in combination with any, don't count it
-    --count;
-    Log::Verbose = true;
+  if (options.help) {
+    // Asking for a help
+    PrintUsage(stdout);
+    return 0;
   }
+  Log::Verbose = options.verbose;
   if (options.pipename) {
-    // Running RPC server mode, nothing else matters
+    // Running RPC server mode
     Log::Mode = LogMode::Pipe;
     auto hr = RpcServer{Buffer}.Run(options.pipename);
     return FAILED(hr) ? 1 : 0;
   }
   if (options.version) {
     PrintVersion();
+    // Asking for just a version is OK
     if (count == 1) return 0;
-  }
-  if (options.help) {
-    PrintUsage(stdout);
-    return 0;
   }
   if (!options.pid) {
     fprintf(stderr,
             "Target PID is not specified. See '" Q(TARGETNAME) " /help'.\n");
     return 1;
   }
-  // OK
+  // Go
   Log::Mode = LogMode::Console;
   auto hr = Application{Buffer}.Run(options);
   if (FAILED(hr)) {
