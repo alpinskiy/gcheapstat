@@ -19,7 +19,7 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
            services running under LocalSystem (administrator account is not powerful enough for that).
   PID      Target process ID.
 ```
-## Технические подробности
+## Технические детали
 
 Целевой процесс открывается с правами "только чтение", поэтому возможность ему навредить (намерено или по ошибке) исключена.
 
