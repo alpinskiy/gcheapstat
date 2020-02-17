@@ -9,8 +9,7 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
 
   HELP     Display usage information.
   VERSION  Display version.
-  VERBOSE  Display warning and information messages while running.
-           Only errors are displayed by default.
+  VERBOSE  Display warnings. Only errors are displayed by default.
   SORT     Sort output by either total SIZE or COUNT, ascending '+' or
            descending '-'. You can also specify generation to sort on.
   LIMIT    Limit the number of rows to output.
