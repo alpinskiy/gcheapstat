@@ -1,6 +1,6 @@
 # GcHeapStat [![Build status](https://ci.appveyor.com/api/projects/status/3pcm9r3rai06g891?svg=true)](https://ci.appveyor.com/project/alpinskiy/gcheapstat/build/artifacts) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3b99c9352dc7495383808c7824c0b420)](https://www.codacy.com/manual/malpinskiy/gcheapstat?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=alpinskiy/gcheapstat&amp;utm_campaign=Badge_Grade)
 
-Делает то же что и WinDBG/SOS команда "!dumpheap -stat", только быстрее и без подключения отладчика к целевому процессу.
+Делает то же что и WinDBG/SOS команда "!dumpheap -stat", но без подключения отладчика к целевому процессу. Все что GcHeapStat делает c целевым процессом - читает его память.
 
 ## Использование
 ```
