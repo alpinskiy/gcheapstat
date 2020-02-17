@@ -96,26 +96,26 @@ int Options::ParseCommandLine(PCWSTR cmdline) {
 
 void PrintVersion() { printf(PRODUCTNAME " version " VERSION "\n"); }
 
-void PrintUsage(FILE* file) {
-  fprintf(file, DESCRIPTION ".\n\n");
+void PrintUsage() {
+  printf(DESCRIPTION ".\n\n");
   char name[] = QTARGETNAME;
   // clang-format off
   std::transform(name, name + strlen(name), name, toupper);
-  fprintf(file, "%s [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]\n", name);
+  printf("%s [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]\n", name);
   std::fill_n(name, strlen(name), ' ');
-  fprintf(file, "%s [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n\n", name);
-  fprintf(file, "  HELP     Display usage information.\n");
-  fprintf(file, "  VERSION  Display version.\n");
-  fprintf(file, "  VERBOSE  Display warning and information messages while running.\n");
-  fprintf(file, "           Only errors are displayed by default.\n");
-  fprintf(file, "  SORT     Sort output by either total SIZE or COUNT, ascending '+' or\n");
-  fprintf(file, "           descending '-'. You can also specify generation to sort on.\n");
-  fprintf(file, "  LIMIT    Limit the number of rows to output.\n");
-  fprintf(file, "  GEN      Count only objects of the generation specified.\n");
-  fprintf(file, "  RUNAS    The only currently available value is LOCALSYSTEM (run under\n");
-  fprintf(file, "           LocalSystem computer account). This is to allow inspection of managed\n");
-  fprintf(file, "           services running under LocalSystem (administrator account is not\n");
-  fprintf(file, "           powerful enough for that).\n");
-  fprintf(file, "  PID      Target process ID.\n");
+  printf("%s [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n\n", name);
+  printf("  HELP     Display usage information.\n");
+  printf("  VERSION  Display version.\n");
+  printf("  VERBOSE  Display warning and information messages while running.\n");
+  printf("           Only errors are displayed by default.\n");
+  printf("  SORT     Sort output by either total SIZE or COUNT, ascending '+' or\n");
+  printf("           descending '-'. You can also specify generation to sort on.\n");
+  printf("  LIMIT    Limit the number of rows to output.\n");
+  printf("  GEN      Count only objects of the generation specified.\n");
+  printf("  RUNAS    The only currently available value is LOCALSYSTEM (run under\n");
+  printf("           LocalSystem computer account). This is to allow inspection of managed\n");
+  printf("           services running under LocalSystem (administrator account is not\n");
+  printf("           powerful enough for that).\n");
+  printf("  PID      Target process ID.\n");
   // clang-format on
 }

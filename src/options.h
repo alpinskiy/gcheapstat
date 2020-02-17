@@ -20,4 +20,4 @@ struct Options final {
 };
 
 void PrintVersion();
-void PrintUsage(FILE* file);
+void PrintUsage();

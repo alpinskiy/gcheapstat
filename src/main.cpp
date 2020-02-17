@@ -15,7 +15,7 @@ int main() {
   }
   if (options.help) {
     // Asking for a help
-    PrintUsage(stdout);
+    PrintUsage();
     return 0;
   }
   Log::Verbose = options.verbose;
