@@ -28,7 +28,7 @@ GcHeapStat bitness should match the bitness of the target application. There is 
 ## Details
 ### Why not WinDBG/SOS?
 Yes, you can use WinDBG (or any other debugger) for this purpose. It is just not well suited for inspection of applications running in production:
-1. The debugger suspends execution of the target. The chances are slim you will be able to execute any of the debugger command so nobody will notice it. Even if you try to automate it.
+1. The debugger suspends execution of the target. The chances are slim you will be able to execute any of the debugger command so nobody will notice an application hang from the outside. Even if you try to automate it.
 1. If you close the debugger while debugging so will do the debuggee. There is a chance you can forget to detach debuggee. Or you might issue a command like "kill". All these will shutdown a target application. It is just danjerous to use debugger in production environment.
 1. You can not accomplish a task with the debugger only if target application is running under LocalSystem account. Even an administrator account is not powefull enough to do that. This tool can do that out of the box by itself.
 ### How does it work?
