@@ -26,7 +26,7 @@ Zero status code on success, non-zero otherwise.
 ```
 GcHeapStat bitness should match the bitness of the target application. There is an AppVeyor artifact named gcheapstatN.zip (N is a build number). There you can find gcheapstat32.exe and gcheapstat64.exe for debugging x86 and x64 targets respectevily. Nothing bad will happen however if you try to inspect x64 target with x86 version of GcHeapStat (and vise versa). 
 ## Details
-### Why not WinDBG/SOS instead?
+### Why not WinDBG/SOS?
 Yes, you can use WinDBG (or any other debugger) for this purpose. It is just not well suited for inspection of applications working in production environment:
 1. The debugger suspends execution of the target. The chances are slim you will be able to execute any of the debugger command so nobody will notice it. Even if you try to automate it.
 1. If you close the debugger while debugging so will do the debuggee. There is a chance you can forget to detach debuggee. Or you might issue a command like "kill". All these will shutdown a target application. It is just danjerous to use debugger in production environment.
