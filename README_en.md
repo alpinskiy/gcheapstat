@@ -33,14 +33,14 @@ Yes, you can use WinDBG (or any other debugger) for this purpose. It is just not
 1. You can not accomplish a task only with the debugger if a target application is running under LocalSystem account. Even an administrator account can not read the memory of process running under LocalSystem account. GcHeapStat can be run under LocalSystem account without extra tooling.
 ### How does it work?
 It is possible to get GC heap details without suspending a target process due to the following:
-1. New managed objects are always placed on the end of the heap (LOH might be an exception but not that many applications create huge memory traffic in the LOH heap segment).
-1. Objects are moved around only during compacting phase of GC, which take relatevely small amount of time (Microsoft is actually strive to get garbage collection complete in a time interval needed to process an ordinary PageFault).
+1. New managed objects are always placed on the end of the heap. LOH might be an exception but not that many applications create a huge memory traffic in the LOH heap segment.
+1. Objects are moved around only during compacting phase of GC, which take relatevely small amount of time (Microsoft is strive to get garbage collection complete in a time interval needed to process an ordinary PageFault).
 
 Yes, object values might change. Yes object header flags might change. But the following does not change:
 1. Object's MethodTable (you can not change the type of object)
-1. Objects's size (you can not change the size of object)
+1. Object's size (you can not change the size of object)
 
-So, in terms of object types and sizes, it is safe to consider managed heap a read-only structure.
+So, in terms of object types and sizes, most of the time it is safe to consider managed heap a read-only structure.
 
 GcHeapStat inspects target process with the help of Data Access Layer (DAC) library, wich Microsoft ships with each version of CRL.
 DAC provides an unified interface for accessing CLR details.
