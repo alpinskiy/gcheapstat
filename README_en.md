@@ -29,8 +29,8 @@ GcHeapStat bitness should match the bitness of the target application. There is 
 ### Why not WinDBG/SOS?
 Yes, you can use WinDBG (or any other debugger) for this purpose. It is just not well suited for inspection of applications running in production:
 1. The debugger suspends execution of the target. The chances are slim you will be able to execute any of the debugger command so nobody will notice an application hang from the outside. Even if you try to automate it.
-1. If you close the debugger while debugging so will do the debuggee. There is a chance you can forget to detach debuggee. Or you might issue a command like "kill". All these will shutdown a target application. It is just danjerous to use debugger in production environment.
-1. You can not accomplish a task with the debugger only if target application is running under LocalSystem account. Even an administrator account is not powefull enough to do that. This tool can do that out of the box by itself.
+1. The debuggee dies with a debugger. Debuggee will be also closed if you close the debugger while the debugging session is active. Also there is a chance you forget to detach the debuggee. Or you might issue a command like "kill". All these will shutdown the target application. It is just danjerous to use debugger in a production environment.
+1. You can not accomplish a task only with the debugger if a target application is running under LocalSystem account. Even an administrator account can not read the memory of process running under LocalSystem account. GcHeapStat can be run under LocalSystem account without extra tooling.
 ### How does it work?
 It is possible to get GC heap details without suspending a target process due to the following:
 1. New managed objects are always placed on the end of the heap (LOH might be an exception but not that many applications create huge memory traffic in the LOH heap segment).
