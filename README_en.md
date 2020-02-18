@@ -50,4 +50,4 @@ GcHeapStat opens target process with ```PROCESS_QUERY_LIMITED_INFORMATION|PROCES
 ### Correctness
 1. All inconsistencies are reported either as an error or warning message (/VERBOSE options outputs all of them). For example, GcHeapStat verifies that all heap segments reported by DAC contain valid objects. This in turn implies that all the object start addresses contain valid method table address. The method table address is used then to get an object details with the help of the DAC. The chances are slim that we will read a valid method table from a random location.
 1. Comparison with WinDBG/SOS output. GcHeapStat outputs the same format as WinDBG/SOS do. Therefore we can use any text diff application for the sake of comparison. GcHeapStat can be run in parallel with a debugger - in this case the output should be identical.
-1. I tryied hard.
+1. I tried hard.
