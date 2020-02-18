@@ -21,9 +21,8 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
            services running under LocalSystem (administrator account is not powerful enough for that).
   PID      Target process ID.
   
-Program exists with zero code on success, non-zero otherwise.
+Zero status code on success, non-zero otherwise.
 ```
-Возвращает код 0, если удалось выполнить задачу без ошибок и отличный от нуля код в противном случае.
 ## Детали
 ### Почему не WinDBG/SOS?
 Да, можно для этих целей использовать WinDBG (или любой другой отладчик). Но он не очень хорошо подходит для инспекции работающих на продакшене приложений:
