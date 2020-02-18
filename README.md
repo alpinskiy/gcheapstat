@@ -10,13 +10,18 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
   VERSION  Display version.
   VERBOSE  Display warnings. Only errors are displayed by default.
   SORT     Sort output by either total SIZE or COUNT, ascending '+' or
-           descending '-'. You can also specify generation to sort on.
+           descending '-'. You can also specify generation to sort on (refer to
+           GEN option description).
   LIMIT    Limit the number of rows to output.
-  GEN      Count only objects of the generation specified.
+  GEN      Count only objects of the generation specified. Valid values are
+           0 to 2 (first, second the third generations respectevely) and 3 for
+           Large Object Heap. The same is for gen parameter of SORT option.
   RUNAS    The only currently available value is LOCALSYSTEM (run under
            LocalSystem computer account). This is to allow inspection of managed
            services running under LocalSystem (administrator account is not powerful enough for that).
   PID      Target process ID.
+  
+Program exists with zero code on success, non-zero otherwise.
 ```
 Возвращает код 0, если удалось выполнить задачу без ошибок и отличный от нуля код в противном случае.
 ## Детали
