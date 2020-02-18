@@ -46,8 +46,8 @@ GcHeapStat inspects target process with the help of Data Access Layer (DAC) libr
 DAC provides an unified interface for accessing CLR details.
 It resides in the same directory with CRL binary and is always available on the machine the managed application runs on.
 DAC is used by debuggers. All you need to work with DAC is the ability to read target process memory. 
-GcHeapStat opens target process with ```PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ``` therefor it can not hurt it anyway.
+GcHeapStat opens target process with ```PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ``` therefore it can not hurt it anyway (by definition of read-only access).
 ### Correctness
-1. All inconsistesies are reported either as error or warnings (/VERBOSE options turns all them ON). I.e. it is verified that all heap segments reported by DAC contain valid objects. This in turn implies that all the object start addresses contain valid method table address. The method table address is used then to get an object details with the help of DAC. The chances are slim we can read a valid method table from a random address.
-1. Comparing with WinDBG/SOS output. GcHeapStat outputs the same format as WinDBG/SOS do, so we can use any text diff application for comparition. GcHeapStat can run in parallel with the debugger - in this case the output should be identical.
+1. All inconsistencies are reported either as an error or warning message (/VERBOSE options outputs all of them). For example, GcHeapStat verifies that all heap segments reported by DAC contain valid objects. This in turn implies that all the object start addresses contain valid method table address. The method table address is used then to get an object details with the help of the DAC. The chances are slim that we will read a valid method table from a random location.
+1. Comparison with WinDBG/SOS output. GcHeapStat outputs the same format as WinDBG/SOS do. Therefore we can use any text diff application for the sake of comparison. GcHeapStat can be run in parallel with a debugger - in this case the output should be identical.
 1. I tryied hard.
