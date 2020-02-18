@@ -24,7 +24,7 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
 
 Zero status code on success, non-zero otherwise.
 ```
-GcHeapStat bitness should match the bitness of the target. There is an AppVeyor artifact named gcheapstatN.zip (where N is a build number, refer to the AppVeyor status badge on the top on this document). There you can find binaries gcheapstat32.exe and gcheapstat32.exe for debugging x86 and x64 targets respectevily. Nothing bad will happen however if you try to inspect x64 target with x86 version of GcHeapStat (and vise versa). 
+GcHeapStat bitness should match the bitness of the target application. There is an AppVeyor artifact named gcheapstatN.zip (N is a build number). There you can find gcheapstat32.exe and gcheapstat64.exe for debugging x86 and x64 targets respectevily. Nothing bad will happen however if you try to inspect x64 target with x86 version of GcHeapStat (and vise versa). 
 ## Details
 ### Why not WinDBG/SOS instead?
 Yes, you can use WinDBG (or any other debugger) for this purpose. It is just not well suited for inspection of applications working in production environment:
