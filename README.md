@@ -18,9 +18,10 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
            Large Object Heap. The same is for gen parameter of SORT option.
   RUNAS    The only currently available value is LOCALSYSTEM (run under
            LocalSystem computer account). This is to allow inspection of managed
-           services running under LocalSystem (administrator account is not powerful enough for that).
+           services running under LocalSystem (administrator account is not
+           powerful enough for that).
   PID      Target process ID.
-  
+
 Zero status code on success, non-zero otherwise.
 ```
 ## Детали

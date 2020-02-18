@@ -106,16 +106,19 @@ void PrintUsage() {
   printf("%s [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n\n", name);
   printf("  HELP     Display usage information.\n");
   printf("  VERSION  Display version.\n");
-  printf("  VERBOSE  Display warning and information messages while running.\n");
-  printf("           Only errors are displayed by default.\n");
+  printf("  VERBOSE  Display warnings. Only errors are displayed by default.\n");
   printf("  SORT     Sort output by either total SIZE or COUNT, ascending '+' or\n");
-  printf("           descending '-'. You can also specify generation to sort on.\n");
+  printf("           descending '-'. You can also specify generation to sort on (refer to\n");
+  printf("           GEN option description).\n");
   printf("  LIMIT    Limit the number of rows to output.\n");
-  printf("  GEN      Count only objects of the generation specified.\n");
+  printf("  GEN      Count only objects of the generation specified. Valid values are\n");
+  printf("           0 to 2 (first, second the third generations respectevely) and 3 for\n");
+  printf("           Large Object Heap. The same is for gen parameter of SORT option.\n");
   printf("  RUNAS    The only currently available value is LOCALSYSTEM (run under\n");
   printf("           LocalSystem computer account). This is to allow inspection of managed\n");
   printf("           services running under LocalSystem (administrator account is not\n");
   printf("           powerful enough for that).\n");
-  printf("  PID      Target process ID.\n");
+  printf("  PID      Target process ID.\n\n");
+  printf("Zero status code on success, non-zero otherwise.\n");
   // clang-format on
 }
