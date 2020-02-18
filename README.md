@@ -24,6 +24,7 @@ GCHEAPSTAT [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]
 
 Zero status code on success, non-zero otherwise.
 ```
+Требуется, чтобы разрядность GcHeapStat и целевого процесса совпадала. В AppVeyor можно найти gcheapstat32.exe и gcheapstat32.exe для x86 и x64 процессов соответственно (артифакт gcheapstatN.zip, N номер билда).
 ## Детали
 ### Почему не WinDBG/SOS?
 Да, можно для этих целей использовать WinDBG (или любой другой отладчик). Но он не очень хорошо подходит для инспекции работающих на продакшене приложений:
