@@ -29,7 +29,7 @@ GcHeapStat bitness should match the bitness of the target application. There is 
 ### Why not WinDBG/SOS?
 Yes, you can use WinDBG (or any other debugger) for this purpose. It is just not well suited for inspection of applications running in production:
 1. The debugger suspends execution of the target. The chances are slim you will be able to execute any of the debugger command so nobody will notice an application hang from the outside. Even if you try to automate it.
-1. The debuggee dies with a debugger. Debuggee will be also closed if you close the debugger while the debugging session is active. Also there is a chance you forget to detach the debuggee. Or you might issue a command like "kill". All these will shutdown the target application. It is just danjerous to use debugger in a production environment.
+1. The debuggee dies with a debugger. Debuggee will be also closed if you close the debugger while the debugging session is active. Also there is a chance you forget to detach the debuggee. Or you might issue a command like "kill". All these will shutdown the target application. It is just dangerous to use debugger in a production environment.
 1. You can not accomplish a task only with the debugger if a target application is running under LocalSystem account. Even an administrator account can not read the memory of process running under LocalSystem account. GcHeapStat can be run under LocalSystem account without extra tooling.
 ### How does it work?
 It is possible to get GC heap details without suspending a target process due to the following:
@@ -42,11 +42,7 @@ Yes, object values might change. Yes object header flags might change. But the f
 
 So, in terms of object types and sizes, most of the time it is safe to consider managed heap a read-only structure.
 
-GcHeapStat inspects target process with the help of Data Access Layer (DAC) library, wich Microsoft ships with each version of CRL.
-DAC provides an unified interface for accessing CLR details.
-It resides in the same directory with CRL binary and is always available on the machine the managed application runs on.
-DAC is used by debuggers. All you need to work with DAC is the ability to read target process memory. 
-GcHeapStat opens target process with ```PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ``` therefore it can not hurt it anyway (by definition of read-only access).
+GcHeapStat inspects target process with the help of Data Access Layer (DAC) library, which Microsoft ships with each version of CRL. DAC provides unified interface for accessing CLR details. It resides in the same directory with CRL binary and is always available on the machine the managed application runs on. DAC is used by debuggers. All you need to work with DAC is the ability to read target process memory. GcHeapStat opens target process with ```PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ``` therefore it can not hurt it anyway (by definition of read-only access).
 ### Correctness
 1. All inconsistencies are reported either as an error or warning message (/VERBOSE options outputs all of them). For example, GcHeapStat verifies that all heap segments reported by DAC contain valid objects. This in turn implies that all the object start addresses contain valid method table address. The method table address is used then to get an object details with the help of the DAC. The chances are slim that we will read a valid method table from a random location.
 1. Comparison with WinDBG/SOS output. GcHeapStat outputs the same format as WinDBG/SOS do. Therefore we can use any text diff application for the sake of comparison. GcHeapStat can be run in parallel with a debugger - in this case the output should be identical.
