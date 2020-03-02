@@ -9,7 +9,7 @@ int main() {
   Options options{};
   auto count = options.ParseCommandLine(GetCommandLineW());
   if (count < 0) {
-    // Error parsing the command-line arguments
+    // Error parsing command-line arguments
     fprintf(stderr, "See '" QTARGETNAME " /help'.\n");
     return 1;
   }
