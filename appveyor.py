@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import zipfile
 import subprocess
@@ -16,31 +15,6 @@ def zip_binary(zipname, platform, configuration):
   zipf.write(path, name)
   zipf.close()
   return zipname
-
-formatRe = re.compile(r'Format: RSDS, {([0-9a-fA-F\-]+)},\s*(\d+)')
-def dumpbin(path):
-  proc = subprocess.Popen([
-    r'dumpbin.exe',
-    path, '/headers'], stdout=subprocess.PIPE)
-  for line in iter(proc.stdout.readline, ''):
-    match = formatRe.search(line.decode('utf-8'))
-    if match:
-      groups = match.groups()
-      guid = groups[0].replace('-', '')
-      age = int(groups[1])
-      return guid, age
-
-def zip_pdb(zipf, path, name):
-  guid, age = dumpbin(os.path.join(path, name + '.exe'))
-  pdb_name = name + '.pdb'
-  zipf.write(os.path.join(path, pdb_name), r'%s\%s%x\%s' % (pdb_name, guid, age, pdb_name))
-
-def zip_symbols(zipname, platform, configuration):
-  zipf = zipfile.ZipFile(zipname, 'a', zipfile.ZIP_DEFLATED)
-  path = os.path.join('out', platform, configuration)
-  zip_pdb(zipf, path, 'gcheapstat')
-  zip_pdb(zipf, path, 'gcheapstatsvc')
-  zipf.close()
 
 def build(platform, configuration):
   subprocess.call(['msbuild',
@@ -73,10 +47,4 @@ if __name__ == '__main__':
   zip_binary(zipname, 'x86', 'Debug')
   zip_binary(zipname, 'x64', 'Debug')
   push_artifact(zipname)
-  # Zip symbols
-  zipname = 'gcheapstat' + tag + 'pdb.zip';
-  zip_symbols(zipname, 'x86', 'Release')
-  zip_symbols(zipname, 'x64', 'Release')
-  zip_symbols(zipname, 'x86', 'Debug')
-  zip_symbols(zipname, 'x64', 'Debug')
-  push_artifact(ipname)
+
