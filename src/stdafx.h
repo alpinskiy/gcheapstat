@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+#include <iterator>
 
 #include "wil/com.h"
 #include "wil/resource.h"
