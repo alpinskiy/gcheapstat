@@ -1,5 +1,7 @@
 #include "mtstat_calculator.h"
 
+#include <iterator>
+
 MtStatCalculator::MtStatCalculator()
     : hprocess_{nullptr},
       sos_dac_interface_{nullptr},
