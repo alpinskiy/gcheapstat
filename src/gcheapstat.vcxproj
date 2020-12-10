@@ -105,6 +105,7 @@
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pathcch.lib;shlwapi.lib;corguids.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -127,6 +128,7 @@
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>pathcch.lib;shlwapi.lib;corguids.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -151,6 +153,7 @@
       <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -177,6 +180,7 @@
       <PreprocessorDefinitions>TARGETNAME=$(TargetName);_CRT_SECURE_NO_WARNINGS;RPC_USE_NATIVE_WCHAR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -233,6 +237,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
@@ -252,6 +262,7 @@
     <ClInclude Include="options.h" />
     <ClInclude Include="process_info.h" />
     <ClInclude Include="rpc_h.h" />
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
