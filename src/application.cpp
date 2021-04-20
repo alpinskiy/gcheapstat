@@ -1,6 +1,5 @@
 #include "application.h"
 
-#include "clr_data_access.h"
 #include "mtstat_calculator.h"
 #include "rpc_helpers.h"
 #include "runas_localsystem.h"

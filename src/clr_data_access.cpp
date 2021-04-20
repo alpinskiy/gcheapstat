@@ -3,7 +3,7 @@
 #include "clr_data_target_impl.h"
 
 HMODULE LoadDataAccessModule(ProcessInfo* procinfo) {
-  if (!procinfo->managed || !procinfo->clrpath) return nullptr;
+  if (!procinfo->managed || !procinfo->clrpath[0]) return nullptr;
   HRESULT hr;
   wchar_t path[MAX_PATH];
   auto fail =

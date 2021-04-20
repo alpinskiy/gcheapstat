@@ -1,5 +1,4 @@
 #pragma once
-#include "common.h"
 #include "process_context.h"
 #include "rpc_h.h"
 #include "rpc_helpers.h"

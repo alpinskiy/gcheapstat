@@ -1,7 +1,5 @@
 #include "rpc_helpers.h"
 
-#include "rpc_h.h"
-
 HRESULT RpcInitializeClient(PWSTR pipename, RPC_BINDING_HANDLE *hbinding) {
   // https://docs.microsoft.com/en-us/windows/win32/rpc/the-client-application
   WCHAR protseq[] = L"ncacn_np";

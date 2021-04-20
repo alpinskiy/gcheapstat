@@ -1,5 +1,4 @@
 #pragma once
-#include <clrdata.h>
 
 struct ProcessInfo final {
   HRESULT Initialize(HANDLE hprocess);

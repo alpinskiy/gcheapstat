@@ -1,6 +1,6 @@
 #include "process_info.h"
 
-#include <psapi.h>
+#include <Psapi.h>
 
 HRESULT ProcessInfo::Initialize(HANDLE hprocess) {
   DWORD n = 0;

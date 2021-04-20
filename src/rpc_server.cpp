@@ -1,5 +1,6 @@
 #include "rpc_server.h"
 
+#include "common.h"
 #include "mtstat_calculator.h"
 
 HRESULT RpcStubCalculateMtStat(handle_t handle, DWORD pid, PSIZE_T size) {
