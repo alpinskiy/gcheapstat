@@ -1,19 +1,15 @@
 #pragma once
-#include "build.txt"
+#include "../build_number.txt"
 
 #define MAJOR 0
-#define MINOR 1
-#define PATCH 0
 #ifndef BUILD
 #define BUILD 0
 #endif
 
 #define QQ(x) #x
 #define Q(x) QQ(x)
-#define QTARGETNAME Q(TARGETNAME)
 
-#define PRODUCTNAME "GCHeapStat"
+#define PRODUCTNAME "gcheapstat"
 #define DESCRIPTION ".NET GC heap statistics generator"
-#define COPYRIGHT "Copyright (C) 2020 Mikhail Alpinskiy"
-#define VERSION Q(MAJOR) "." Q(MINOR) "." Q(PATCH) "." Q(BUILD)
-#define FILENAME QTARGETNAME ".exe"
+#define VERSION MAJOR,BUILD
+#define VERSION_STR Q(MAJOR) "." Q(BUILD)

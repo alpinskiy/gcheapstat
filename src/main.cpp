@@ -1,57 +1,49 @@
-#include "application.h"
-#include "options.h"
-#include "rpc_server.h"
-#include "version.h"
+﻿#include "format.h"
+#include "statistics.h"
 
-wchar_t Buffer[64 * 1024];
+int Log::Level;
+int Log::ErrorCount;
 
-int main() {
+int main(int argc, char* argv[]) {
   Options options{};
-  auto count = options.ParseCommandLine(GetCommandLineW());
-  if (count < 0) {
-    // Error parsing command-line arguments
-    fprintf(stderr, "See '" QTARGETNAME " /help'.\n");
-    return 1;
+  if (options.ParseCommandLine(argc, argv)) {
+    if (options.help) {
+      if (2 < argc) {
+        Error() << "/help option should not be used with others";
+      } else {
+        PrintHelp(argv[0]);
+        return 0;
+      }
+    }
+    if (options.version) {
+      if (2 < argc) {
+        Error() << "/version option should not be used with others";
+      } else {
+        PrintVersion();
+        return 0;
+      }
+    }
   }
-  if (options.help) {
-    // Asking for a help
-    PrintUsage();
-    return 0;
-  }
-  Log::Verbose = options.verbose;
-  if (options.pipename) {
-    // Running RPC server mode
-    Log::Mode = LogMode::Pipe;
-    auto hr = RpcServer{Buffer}.Run(options.pipename);
-    return FAILED(hr) ? 1 : 0;
-  }
-  if (options.version) {
-    PrintVersion();
-    // Asking for just a version is OK
-    if (count == 1) return 0;
-  }
-  if (!options.pid) {
-    fprintf(stderr,
-            "Process ID of the target application is not specified. See "
-            "'" QTARGETNAME " /help'.\n");
-    return 1;
-  }
-  // Go
-  Log::Mode = LogMode::Console;
-  auto hr = Application{Buffer}.Run(options);
-  if (FAILED(hr)) {
-    auto len = FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, hr,
-        MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), Buffer,
-        _ARRAYSIZE(Buffer), NULL);
-    if (len) {
-      wprintf(Buffer);
-    } else
-      wprintf(L"Error 0x%08lx\n", hr);
-    return 1;
-  }
-  return 0;
-}
 
-PVOID __RPC_API MIDL_user_allocate(size_t size) { return malloc(size); }
-void __RPC_API MIDL_user_free(PVOID p) { free(p); }
+  if (!options.pid) {
+    Error() << "/pid option is not provided";
+  }
+
+  if (Log::ErrorCount != 0) {
+    std::cerr << "See `" << GetProgramName(argv[0]) << " /help`";
+    return Log::ErrorCount;
+  }
+
+  try {
+    HeapStatistics statistics;
+    if (HeapStatisticsGenerator::Run(options, statistics) &&
+        (Log::ErrorCount == 0 || !options.strict)) {
+      std::cout << Format{statistics, options};
+    }
+  } catch (std::exception& exception) {
+    Error() << exception.what();
+    return -1;
+  }
+
+  return Log::ErrorCount;
+}

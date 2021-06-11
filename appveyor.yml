@@ -1,4 +1,18 @@
-version: '0.1.0.{build}'
-image: Visual Studio 2019
-install: git submodule update --init --recursive
-build_script: appveyor.py
+image:
+  - Visual Studio 2019
+  - Ubuntu2004
+version: '0.{build}'
+
+for:
+-
+  matrix:
+    only:
+      - image: Visual Studio 2019
+  install: git submodule update --init --recursive
+  build_script: appveyor/build.bat
+-
+  matrix:
+    only:
+      - image: Ubuntu2004
+  install: git submodule update --init ./ext/json
+  build_script: ./appveyor/build.sh

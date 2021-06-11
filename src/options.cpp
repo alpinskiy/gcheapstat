@@ -1,124 +1,145 @@
 #include "options.h"
 
+#include <cstring>
+
 #include "version.h"
 
-int Options::ParseCommandLine(PCWSTR cmdline) {
-  int argc = 0;
-  auto argv = CommandLineToArgvW(cmdline, &argc);
-  if (argv == nullptr) return -1;
-  std::unique_ptr<PWSTR, decltype(&LocalFree)> argv_scope_guard{
-      CommandLineToArgvW(cmdline, &argc), LocalFree};
-  int count = 0;
-  for (auto i = 1; i < argc; ++i, ++count) {
-    PWSTR val = nullptr;
-    if (auto res = wcschr(argv[i], ':')) {
+#ifdef _MSC_VER
+#include <string.h>
+#define strcasecmp _stricmp
+#define sscanf sscanf_s
+#endif
+
+namespace {
+
+#ifdef _MSC_VER
+inline bool DirectorySeparatorChar(char ch) { return ch == '/' || ch == '\\'; }
+#else
+inline bool DirectorySeparatorChar(char ch) { return ch == '/'; }
+#endif
+
+}  // namespace
+
+bool Options::ParseCommandLine(int argc, char* argv[]) {
+  // Parse command line
+  auto i = 1;
+  for (; i < argc; ++i) {
+    char* val = nullptr;
+    if (auto res = strchr(argv[i], ':')) {
       auto next = res + 1;
       if (*next) val = next;
       *res = 0;
     }
-    if (!_wcsicmp(argv[i], L"/pipe")) {
-      if (!val)
-        // pipe name is missing
-        return -1;
-      pipename = val;
-    } else if (!_wcsicmp(argv[i], L"/pid") || !_wcsicmp(argv[i], L"/p")) {
-      if (!val || swscanf_s(val, L"%u", &pid) != 1) {
-        fprintf(stderr, "Invalid or missing PID value. ");
-        return -1;
+    if (!strcasecmp(argv[i], "/pid") || !strcasecmp(argv[i], "/p")) {
+      if (!val || sscanf(val, "%d", &pid) != 1) {
+        Error() << "Invalid or missing value for /pid option";
+        break;
       }
-    } else if (!_wcsicmp(argv[i], L"/limit") || !_wcsicmp(argv[i], L"/l")) {
-      if (!val || swscanf_s(val, L"%zu", &limit) != 1) {
-        fprintf(stderr, "Invalid or missing value for LIMIT option. ");
-        return -1;
+    } else if (!strcasecmp(argv[i], "/limit") || !strcasecmp(argv[i], "/l")) {
+      if (!val || sscanf(val, "%zu", &limit) != 1) {
+        Error() << "Invalid or missing value for /limit option";
+        break;
       }
-    } else if (!_wcsicmp(argv[i], L"/sort") || !_wcsicmp(argv[i], L"/s")) {
+    } else if (!strcasecmp(argv[i], "/sort") || !strcasecmp(argv[i], "/s")) {
       if (!val)
         // default sorting options apply
         continue;
       if (val[0] == '-' || val[0] == '+') {
-        order = (val[0] == '+') ? Order::Asc : Order::Desc;
+        order = val[0] == '+' ? Order::Asc : Order::Desc;
         ++val;
         if (*val == 0)
           // just sort order
           continue;
       }
-      if (auto res = wcschr(val, ':')) {
+      if (auto res = strchr(val, ':')) {
         auto next = res + 1;
-        if (*next && swscanf_s(next, L"%u", &orderby_gen) != 1) {
-          fprintf(stderr, "Invalid generation number for SORT option. ");
-          return -1;
+        if (*next && sscanf(next, "%d", &orderby_gen) != 1) {
+          Error() << "Invalid generation number for /sort option";
+          break;
         }
         *res = 0;
       }
-      if (!_wcsicmp(val, L"size") || !_wcsicmp(val, L"s"))
+      if (!strcasecmp(val, "size") || !strcasecmp(val, "s"))
         orderby = OrderBy::TotalSize;
-      else if (!_wcsicmp(val, L"count") || !_wcsicmp(val, L"c"))
+      else if (!strcasecmp(val, "count") || !strcasecmp(val, "c"))
         orderby = OrderBy::Count;
       else {
-        fprintf(stderr, "Invalid column name for SORT option. ");
-        return -1;
+        Error() << "Invalid column name for /sort option";
+        break;
       }
-    } else if (!_wcsicmp(argv[i], L"/gen") || !_wcsicmp(argv[i], L"/g")) {
-      if (!val || swscanf_s(val, L"%u", &gen) != 1) {
-        fprintf(stderr, "Invalid or missing value for GEN option. ");
-        return -1;
+    } else if (!strcasecmp(argv[i], "/statistics") ||
+               !strcasecmp(argv[i], "/g")) {
+      if (!val || sscanf(val, "%d", &gen) != 1) {
+        Error() << "Invalid or missing value for /statistics option";
+        break;
       }
-    } else if (!_wcsicmp(argv[i], L"/help") || !_wcsicmp(argv[i], L"/h") ||
-               !_wcsicmp(argv[i], L"/?"))
+    } else if (!strcasecmp(argv[i], "/help") || !strcasecmp(argv[i], "/h") ||
+               !strcasecmp(argv[i], "/?"))
       help = true;
-    else if (!_wcsicmp(argv[i], L"/verbose") || !wcscmp(argv[i], L"/V")) {
-      if (!val || !_wcsicmp(val, L"yes") || !_wcsicmp(val, L"y"))
+    else if (!strcasecmp(argv[i], "/verbose") || !strcmp(argv[i], "/V")) {
+      if (!val || !strcasecmp(val, "yes") || !strcasecmp(val, "y"))
         verbose = true;
-      else if (_wcsicmp(val, L"no") || !_wcsicmp(val, L"n")) {
-        fprintf(stderr, "Invalid value for VERBOSE option. ");
-        return -1;
+      else if (strcasecmp(val, "no") || !strcasecmp(val, "n")) {
+        Error() << "Invalid value for /verbose option";
+        break;
       }
-    } else if (!_wcsicmp(argv[i], L"/runas") || !_wcsicmp(argv[i], L"/as")) {
-      if (!val) {
-        fprintf(stderr, "Missing value for RUNAS option. ");
-        return -1;
+    } else if (!strcasecmp(argv[i], "/json")) {
+      json = true;
+      if (val && sscanf(val, "%d", &json_indent) != 1) {
+        Error() << "Invalid indentation value for /json option";
+        break;
       }
-      if (!_wcsicmp(val, L"localsystem"))
-        runaslocalsystem = true;
-      else {
-        fprintf(stderr, "Invalid value for RUNAS option. ");
-        return -1;
-      }
-    } else if (!_wcsicmp(argv[i], L"/version") || !wcscmp(argv[i], L"/v")) {
+    } else if (!strcasecmp(argv[i], "/strict")) {
+      strict = true;
+    } else if (!strcasecmp(argv[i], "/version") || !strcmp(argv[i], "/v")) {
       version = true;
     } else {
-      fwprintf(stderr, L"'%s' is not an option. ", argv[i]);
-      return -1;
+      Error() << "`" << argv[i] << "` is not an option";
+      break;
     }
   }
-  return count;
+
+  return i == argc;
 }
 
-void PrintVersion() { printf(PRODUCTNAME " version " VERSION "\n"); }
-
-void PrintUsage() {
-  printf(DESCRIPTION ".\n\n");
-  char name[] = QTARGETNAME;
+void PrintHelp(char* argv0) {
+  auto pname = GetProgramName(argv0);
+  std::cout << DESCRIPTION "\n\n";
+  std::cout << "Usage:\n";
   // clang-format off
-  std::transform(name, name + strlen(name), name, toupper);
-  printf("%s [/VERSION] [/HELP] [/VERBOSE] [/SORT:{+|-}{SIZE|COUNT}[:gen]]\n", name);
-  std::fill_n(name, strlen(name), ' ');
-  printf("%s [/LIMIT:count] [/GEN:gen] [/RUNAS:LOCALSYSTEM] /PID:pid\n\n", name);
-  printf("  HELP     Display usage information.\n");
-  printf("  VERSION  Display version.\n");
-  printf("  VERBOSE  Display warnings. Only errors are displayed by default.\n");
-  printf("  SORT     Sort output by either total SIZE or COUNT, ascending '+' or\n");
-  printf("           descending '-'. You can also specify generation to sort on (refer to\n");
-  printf("           GEN option description).\n");
-  printf("  LIMIT    Limit the number of rows to output.\n");
-  printf("  GEN      Count only objects of the generation specified. Valid values are\n");
-  printf("           0 to 2 (first, second the third generations respectevely) and 3 for\n");
-  printf("           Large Object Heap. The same is for gen parameter of SORT option.\n");
-  printf("  RUNAS    The only currently available value is LOCALSYSTEM (run under\n");
-  printf("           LocalSystem computer account). This is to allow inspection of managed\n");
-  printf("           services running under LocalSystem (administrator account is not\n");
-  printf("           powerful enough for that).\n");
-  printf("  PID      Target process ID.\n\n");
-  printf("Zero status code on success, non-zero otherwise.\n");
+  std::cout << pname << " [/version] [/help] [/verbose] [/sort:{+|-}{size|count}[:gen]]\n";
+  for (auto _ : pname) std::cout << " ";
+  std::cout << " [/limit:n] [/statistics:n] [/format:text|json] /pid:n\n\n";
+  std::cout << "  help     Display usage information\n";
+  std::cout << "  verbose  Display warnings. Only errors are displayed by default\n";
+  std::cout << "  sort     Sort output by either total size or count, ascending '+' or\n";
+  std::cout << "           descending '-'. You can also specify generation to sort on (refer to\n";
+  std::cout << "           `statistics` option description)\n";
+  std::cout << "  limit    Limit the number of rows to output\n";
+  std::cout << "  statistics      Count only objects of the generation specified. Valid values are\n";
+  std::cout << "           0 to 2 (first, second the third generations respectevely) and 3 for\n";
+  std::cout << "           Large Object Heap. The same is for statistics parameter of `sort` option\n";
+  std::cout << "  pid      Target process ID\n\n";
+  std::cout << "Zero status code on success, non-zero otherwise\n";
   // clang-format on
+}
+
+void PrintVersion() { std::cout << PRODUCTNAME " " VERSION_STR "\n"; }
+
+std::string GetProgramName(char* argv0) {
+  for (auto p = argv0; *p != 0; ++p) {
+    if (DirectorySeparatorChar(*p)) {
+      argv0 = p + 1;
+    }
+  }
+#ifdef _MSC_VER
+  // Trim ".exe"
+  auto len = strlen(argv0);
+  if (4 < len && strcmp(argv0 + len - 4, ".exe") == 0) {
+    len -= 4;
+  }
+  return {argv0, len};
+#else
+  return argv0;
+#endif
 }

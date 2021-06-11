@@ -1,37 +1,56 @@
 #pragma once
-#include "rpc_server.h"
-#include "singleton_scope.h"
+#include <codecvt>
+#include <locale>
 
-enum class LogMode { None, Console, Pipe };
-
-class Log {
+class LogLine final {
  public:
-  static LogMode Mode;
-  static bool Verbose;
-
-  template <class... Args>
-  static void Write(bool verbose, PCWSTR format, Args&&... args) {
-    if (Verbose < verbose) return;
-    switch (Mode) {
-      case LogMode::Console:
-        fwprintf(stderr, format, std::forward<Args>(args)...);
-        break;
-      case LogMode::Pipe:
-        SingletonScope<RpcServer>::Invoke(&RpcServer::LogWrite<Args...>, format,
-                                          std::forward<Args>(args)...);
-        break;
-      default:
-        _ASSERT(false);
+  LogLine(LogLine&& other) noexcept : visible_{other.visible_} {
+    if (visible_) {
+      other.visible_ = false;
     }
   }
+
+  ~LogLine() {
+    if (visible_) {
+      std::cerr << std::endl;
+    }
+  }
+
+  LogLine(const LogLine& other) = delete;
+  LogLine& operator=(const LogLine&) = delete;
+  LogLine& operator=(LogLine&&) = delete;
+
+  template <typename T>
+  LogLine& operator<<(T&& t) {
+    if (visible_) {
+      std::cerr << std::forward<T>(t);
+    }
+    return *this;
+  }
+
+ private:
+  explicit LogLine(bool visible) : visible_{visible} {}
+
+  bool visible_;
+  friend struct Log;
 };
 
-template <class... Args>
-void LogError(PCWSTR format, Args&&... args) {
-  Log::Write(false, format, std::forward<Args>(args)...);
-}
+struct Log final {
+  static int Level;
+  static int ErrorCount;
 
-template <class... Args>
-void LogDebug(PCWSTR format, Args&&... args) {
-  Log::Write(true, format, std::forward<Args>(args)...);
+  static LogLine Error() {
+    ++ErrorCount;
+    return LogLine{true};
+  }
+
+  static LogLine Debug() { return LogLine{1 <= Level}; }
+};
+
+inline LogLine Error() { return Log::Error(); }
+inline LogLine Debug() { return Log::Debug(); }
+
+inline std::ostream& operator<<(std::ostream& out, const std::wstring& str) {
+  out << std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>{}.to_bytes(str);
+  return out;
 }

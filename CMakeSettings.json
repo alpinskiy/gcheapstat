@@ -1,0 +1,54 @@
+﻿{
+  "configurations": [
+    {
+      "name": "WSL-Debug-x64",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\build\\linux\\x86",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0"
+    },
+    {
+      "name": "WSL-Debug-x86",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\build\\linux\\x64",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeExecutable": "cmake",
+      "cmakeCommandArgs": "-DCROSSCOMPILE=1",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_clang_x64" ],
+      "wslPath": "${defaultWSLPath}",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0"
+    },
+    {
+      "name": "Debug-x64",
+      "generator": "Visual Studio 16 2019 Win64",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\build\\windows\\x64",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_BUILD_TYPE=Release",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
+      "name": "Debug-x86",
+      "generator": "Visual Studio 16 2019",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\build\\windows\\x86",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_BUILD_TYPE=Debug",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ]
+    }
+  ]
+}
